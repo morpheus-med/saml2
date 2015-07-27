@@ -50,7 +50,7 @@ create_authn_request = (issuer, assert_endpoint, destination, force_authn, conte
   { id, xml }
 
 # Creates metadata and returns it as a string of xml. The metadata has one POST assertion endpoint.
-create_metadata = (entity_id, assert_endpoint, signing_certificate, encryption_certificate) ->
+create_metadata = (entity_id, assert_endpoint, logout_endpoint, signing_certificate, encryption_certificate) ->
   xmlbuilder.create
     'md:EntityDescriptor':
       '@xmlns:md': XMLNS.MD
@@ -65,8 +65,8 @@ create_metadata = (entity_id, assert_endpoint, signing_certificate, encryption_c
             '@Location': assert_endpoint
             '@index': '0'
           'md:SingleLogoutService':
-            '@Binding': 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'
-            '@Location': assert_endpoint
+            '@Binding': 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST'
+            '@Location': logout_endpoint
         ]
   .end()
 
@@ -378,7 +378,7 @@ module.exports.ServiceProvider =
     # @entity_id, @private_key, @certificate, @assert_endpoint can only be set here and are used by exported functions.
     # Rest of options can be set/overwritten by the identity provider and/or at function call.
     constructor: (options) ->
-      {@entity_id, @private_key, @certificate, @assert_endpoint} = options
+      {@entity_id, @private_key, @certificate, @assert_endpoint, @logout_endpoint} = options
       @shared_options = _.pick(options, "force_authn", "auth_context", "nameid_format", "sign_get_request", "allow_unencrypted_assertion")
 
     # Returns:
@@ -514,7 +514,7 @@ module.exports.ServiceProvider =
     # Returns:
     #   XML metadata, used during initial SAML configuration
     create_metadata: =>
-      create_metadata @entity_id, @assert_endpoint, @certificate, @certificate
+      create_metadata @entity_id, @assert_endpoint, @logout_endpoint, @certificate, @certificate
 
 module.exports.IdentityProvider =
   class IdentityProvider
