@@ -430,7 +430,12 @@ parse_authn_response = (saml_response, sp_private_keys, idp_certificates, allow_
         assertion = saml_response.getElementsByTagNameNS(XMLNS.SAML, 'Assertion')
         unless assertion.length is 1
           return cb_wf new Error("Expected 1 Assertion or 1 EncryptedAssertion; found #{assertion.length}")
-        cb_wf null, assertion[0].toString()
+
+        # Attach saml namespace definition before stringifying the document and losing this information
+        assertion = assertion[0]
+        prefix = assertion.lookupPrefix(XMLNS.SAML)
+        assertion.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:' + prefix, XMLNS.SAML)
+        cb_wf null, assertion.toString()
     (result, cb_wf) ->
       # Validate the signature
       debug result
