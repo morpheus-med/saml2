@@ -296,7 +296,7 @@ parse_response_header = (dom) ->
   throw new Error "Invalid SAML Version #{version}" unless version is "2.0"
   response_header
 
-# Takes in an xml @dom of an object containing a SAML Assertion and returns the NameID. If there is no NameID found,
+# Takes in an xml @dom of an object containing a SAML Assertion and returns the NameID and format. If there is no NameID found,
 # it will return null. It will throw an error if the Assertion is missing or does not appear to be valid.
 get_name_id = (dom) ->
   assertion = dom.getElementsByTagNameNS(XMLNS.SAML, 'Assertion')
@@ -308,7 +308,10 @@ get_name_id = (dom) ->
   nameid = subject[0].getElementsByTagNameNS(XMLNS.SAML, 'NameID')
   return null unless nameid.length is 1
 
-  nameid[0].firstChild?.data
+  {
+      value: nameid[0].firstChild?.data
+      format: nameid[0].getAttribute('Format') || null
+  }
 
 get_attribute_value = (node, attributeName) ->
   attributes = node.attributes or []
