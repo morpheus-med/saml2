@@ -353,7 +353,8 @@ parse_authn_response = (saml_response, sp_private_key, idp_certificates, allow_u
       cb_wf null
     (cb_wf) -> async.lift(get_name_id) decrypted_assertion, cb_wf
     (name_id, cb_wf) ->
-      user.name_id = name_id
+      user.name_id = name_id.value
+      user.name_id_format = name_id.format
       async.lift(get_session_index) decrypted_assertion, cb_wf
     (session_index, cb_wf) ->
       user.session_index = session_index
