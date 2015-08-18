@@ -366,6 +366,9 @@ pretty_assertion_attributes = (assertion_attributes) ->
     "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname": "given_name"
     "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name": "name"
     "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn": "upn"
+    'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/homephone': 'home_phone_number'
+    'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/mobilephone': 'mobile_phone_number'
+    'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/otherphone': 'other_phone_number'
     "http://schemas.xmlsoap.org/claims/CommonName": "common_name"
     "http://schemas.xmlsoap.org/claims/Group": "group"
     "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": "role"
