@@ -10,7 +10,8 @@
   "scripts": {
     "test": "make -Br test",
     "test-cov": "make -Br test-cov",
-    "prepublish": "make build"
+    "prepublish": "make build",
+    "preinstall": "make build"
   },
   "repository": {
     "type": "git",
