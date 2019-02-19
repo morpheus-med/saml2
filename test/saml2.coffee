@@ -61,11 +61,15 @@ describe 'saml2', ->
 
       CERT_1_DATA = saml2.extract_certificate_data CERT_1
       CERT_2_DATA = saml2.extract_certificate_data CERT_2
+      ASSERT_ENDPOINT = 'https://sp.example.com/assert'
+      LOGOUT_ENDPOINT = 'https://sp.example.com/logout'
 
       METADATA =
         saml2.create_metadata(
           'https://sp.example.com/metadata.xml',
-          'https://sp.example.com/assert',
+          ASSERT_ENDPOINT,
+          LOGOUT_ENDPOINT,
+
           [CERT_1],
           [CERT_1, CERT_2])
 
@@ -141,6 +145,17 @@ describe 'saml2', ->
 
         assert.equal(
           sp_sso_descriptor.length, 1, "Expected 1 SP SSO descriptor; found #{sp_sso_descriptor.length}")
+        
+        # TODO: Add this tests from Tristan back? https://github.com/morpheus-med/saml2/pull/3/commits/21c7b25b6a58a1c51d239820997811e344664696
+        # assert _(entity_descriptor.getElementsByTagNameNS('urn:oasis:names:tc:SAML:2.0:metadata', 'AssertionConsumerService')).some((assertion) ->
+        #   _(assertion.attributes).some((attr) -> attr.name is 'Binding' and attr.value is 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST') and
+        #     _(assertion.attributes).some((attr) -> attr.name is 'Location' and attr.value is assert_endpoint))
+        #   , "Expected to find an AssertionConsumerService with POST binding and location 'https://sp.example.com/assert'"
+
+        # assert _(entity_descriptor.getElementsByTagNameNS('urn:oasis:names:tc:SAML:2.0:metadata', 'SingleLogoutService')).some((assertion) ->
+        #   _(assertion.attributes).some((attr) -> attr.name is 'Binding' and attr.value is 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST') and
+        #     _(assertion.attributes).some((attr) -> attr.name is 'Location' and attr.value is logout_endpoint))
+        #   , "Expected to find a SingleLogoutService with redirect binding and location 'https://sp.example.com/logout'"
 
     describe 'format_pem', ->
       it 'formats an unformatted private key', ->
@@ -154,23 +169,27 @@ describe 'saml2', ->
 
     describe 'sign_get_request', ->
       it 'correctly signs a get request', ->
-        signed = saml2.sign_request 'TESTMESSAGE', get_test_file("test.pem")
+        uri = new url.URL('https://example.com/assert?qp=123')
+        saml2.sign_request uri, 'TESTMESSAGE', get_test_file("test.pem")
 
         verifier = crypto.createVerify 'RSA-SHA256'
         verifier.update 'SAMLRequest=TESTMESSAGE&SigAlg=http%3A%2F%2Fwww.w3.org%2F2001%2F04%2Fxmldsig-more%23rsa-sha256'
-        assert verifier.verify(get_test_file("test.crt"), signed.Signature, 'base64'), "Signature is not valid"
-        assert.equal signed.SigAlg, 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256'
-        assert.equal signed.SAMLRequest, 'TESTMESSAGE'
+        assert verifier.verify(get_test_file("test.crt"), uri.searchParams.get('Signature'), 'base64'), "Signature is not valid"
+        assert.equal uri.searchParams.get('SigAlg'), 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256'
+        assert.equal uri.searchParams.get('SAMLRequest'), 'TESTMESSAGE'
+        assert.equal uri.searchParams.get('qp'), '123'
 
       it 'correctly signs a get response with RelayState', ->
-        signed = saml2.sign_request 'TESTMESSAGE', get_test_file("test.pem"), 'TESTSTATE', true
+        uri = new url.URL('https://example.com/assert?qp=123')
+        saml2.sign_request uri, 'TESTMESSAGE', get_test_file("test.pem"), 'TESTSTATE', true
 
         verifier = crypto.createVerify 'RSA-SHA256'
         verifier.update 'SAMLResponse=TESTMESSAGE&RelayState=TESTSTATE&SigAlg=http%3A%2F%2Fwww.w3.org%2F2001%2F04%2Fxmldsig-more%23rsa-sha256'
-        assert verifier.verify(get_test_file("test.crt"), signed.Signature, 'base64'), "Signature is not valid"
-        assert signed.SigAlg, 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256'
-        assert.equal signed.RelayState, 'TESTSTATE'
-        assert.equal signed.SAMLResponse, 'TESTMESSAGE'
+        assert verifier.verify(get_test_file("test.crt"), uri.searchParams.get('Signature'), 'base64'), "Signature is not valid"
+        assert.equal uri.searchParams.get('SigAlg'), 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256'
+        assert.equal uri.searchParams.get('SAMLResponse'), 'TESTMESSAGE'
+        assert.equal uri.searchParams.get('RelayState'), 'TESTSTATE'
+        assert.equal uri.searchParams.get('qp'), '123'
 
     describe 'sign_authn_request_with_embedded_signature', ->
       it 'correctly embeds the signature', ->
@@ -260,11 +279,13 @@ describe 'saml2', ->
     describe 'get_name_id', ->
       it 'gets the correct NameID', ->
         name_id = saml2.get_name_id dom_from_test_file('good_assertion.xml')
-        assert.equal name_id, 'tstudent'
+        assert.equal name_id.value, 'tstudent'
+        assert.equal name_id.format, 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient'
 
       it 'parses assertions with explicit namespaces', ->
         name_id = saml2.get_name_id dom_from_test_file('good_assertion_explicit_namespaces.xml')
-        assert.equal name_id, 'tstudent'
+        assert.equal name_id.value, 'tstudent'
+        assert.equal name_id.format, 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient'
 
     describe 'get_session_info', ->
       it 'gets the correct session index', ->
@@ -400,6 +421,7 @@ describe 'saml2', ->
           type: 'authn_response'
           user:
             name_id: 'tstudent'
+            name_id_format: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient'
             session_index: '_3'
             given_name: 'Test',
             email: 'tstudent@example.com',
@@ -997,6 +1019,7 @@ describe 'saml2', ->
           type: 'authn_response'
           user:
             name_id: 'tstudent'
+            name_id_format: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient'
             session_index: '_3'
             given_name: 'Test',
             email: 'tstudent@example.com',

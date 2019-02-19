@@ -122,11 +122,11 @@ create_logout_response = (issuer, in_response_to, destination, status='urn:oasis
 # has a PEM header, it will just return the original key.
 format_pem = (key, type) ->
   return key if (/-----BEGIN [0-9A-Z ]+-----[^-]*-----END [0-9A-Z ]+-----/g.exec(key))?
-  return "-----BEGIN #{type.toUpperCase()}-----\n" + key.match(/.{1,64}/g).join("\n") + "\n-----END #{type.toUpperCase()}-----"
+  return "-----BEGIN #{type.toUpperCase()}-----\n" + key.replace(/\n/g, "").match(/.{1,64}/g).join("\n") + "\n-----END #{type.toUpperCase()}-----"
 
 # Takes a compressed/base64 enoded @saml_request and @private_key and signs the request using RSA-SHA256. It returns
 # the result as an object containing the query parameters.
-sign_request = (saml_request, private_key, relay_state, response=false) ->
+sign_request = (uri, saml_request, private_key, relay_state, response=false) ->
   action = if response then "SAMLResponse" else "SAMLRequest"
   data = "#{action}=" + encodeURIComponent(saml_request)
   if relay_state
@@ -139,20 +139,18 @@ sign_request = (saml_request, private_key, relay_state, response=false) ->
   sign = crypto.createSign 'RSA-SHA256'
   sign.update(saml_request_data + relay_state_data + sigalg_data)
 
-  samlQueryString = {}
-
   if response
-    samlQueryString.SAMLResponse = saml_request
+    uri.searchParams.set 'SAMLResponse', saml_request
   else
-    samlQueryString.SAMLRequest = saml_request
+    uri.searchParams.set 'SAMLRequest', saml_request
 
   if relay_state
-    samlQueryString.RelayState = relay_state
+    uri.searchParams.set 'RelayState', relay_state
 
-  samlQueryString.SigAlg = 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256'
-  samlQueryString.Signature = sign.sign(format_pem(private_key, 'PRIVATE KEY'), 'base64')
+  uri.searchParams.set 'SigAlg', 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256'
+  uri.searchParams.set 'Signature', sign.sign(format_pem(private_key, 'PRIVATE KEY'), 'base64')
 
-  samlQueryString
+  uri
 
 # Converts a pem certificate to a KeyInfo object for use with XML.
 certificate_to_keyinfo = (use, certificate) ->
@@ -440,7 +438,7 @@ parse_authn_response = (saml_response, sp_private_keys, idp_certificates, allow_
         # Attach saml namespace definition before stringifying the document and losing this information
         assertion = assertion[0]
         prefix = assertion.lookupPrefix(XMLNS.SAML)
-        assertion.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:' + prefix, XMLNS.SAML)
+        assertion.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:' + prefix, XMLNS.SAML) if prefix
         cb_wf null, assertion.toString()
     (result, cb_wf) ->
       # Validate the signature
@@ -565,17 +563,28 @@ module.exports.ServiceProvider =
       { id, xml } = create_authn_request @entity_id, @assert_endpoint, identity_provider.sso_login_url, options.force_authn, options.auth_context, options.nameid_format
       zlib.deflateRaw xml, (err, deflated) =>
         return cb err if err?
+        # XXX Upstream merge conflict kept Arterys
+        # try
+        #   uri = url.parse identity_provider.sso_login_url, true
+        # catch ex
+        #   return cb ex
+        # delete uri.search # If you provide search and query search overrides query :/
+        # if options.sign_get_request
+        #   _.extend(uri.query, sign_request(deflated.toString('base64'), @private_key, options.relay_state))
+        # else
+        #   uri.query.SAMLRequest = deflated.toString 'base64'
+        #   uri.query.RelayState = options.relay_state if options.relay_state?
+        # cb null, url.format(uri), id
         try
-          uri = url.parse identity_provider.sso_login_url, true
+          uri = new url.URL(identity_provider.sso_login_url)
         catch ex
           return cb ex
-        delete uri.search # If you provide search and query search overrides query :/
         if options.sign_get_request
-          _.extend(uri.query, sign_request(deflated.toString('base64'), @private_key, options.relay_state))
+          sign_request uri, deflated.toString('base64'), @private_key, options.relay_state
         else
-          uri.query.SAMLRequest = deflated.toString 'base64'
-          uri.query.RelayState = options.relay_state if options.relay_state?
-        cb null, url.format(uri), id
+          uri.searchParams.set('SAMLRequest', deflated.toString 'base64')
+          uri.searchParams.set('RelayState', options.relay_state) if options.relay_state?
+        cb null, uri.toString(), id
 
     # Returns:
     #   An xml string with an AuthnRequest with an embedded xml signature
@@ -626,7 +635,6 @@ module.exports.ServiceProvider =
       async.waterfall [
         (cb_wf) ->
           raw = Buffer.from(options.request_body.SAMLResponse or options.request_body.SAMLRequest, 'base64')
-
           # Inflate response for redirect requests before parsing it.
           if (options.get_request)
             return zlib.inflateRaw raw, cb_wf
@@ -690,20 +698,31 @@ module.exports.ServiceProvider =
       {id, xml} = create_logout_request @entity_id, options.name_id, options.session_index, identity_provider.sso_logout_url
       zlib.deflateRaw xml, (err, deflated) =>
         return cb err if err?
+        # XXX Upstream merge conflict, kept Arterys
+        # try
+        #   uri = url.parse identity_provider.sso_logout_url, true
+        # catch ex
+        #   return cb ex
+        # query = null
+        # if options.sign_get_request
+        #   query = sign_request deflated.toString('base64'), @private_key, options.relay_state
+        # else
+        #   query = SAMLRequest: deflated.toString 'base64'
+        #   query.RelayState = options.relay_state if options.relay_state?
+        # uri.query = _.extend(query, uri.query)
+        # uri.search = null
+        # uri.query = query
+        # cb null, url.format(uri), id
         try
-          uri = url.parse identity_provider.sso_logout_url, true
+          uri = new url.URL(identity_provider.sso_logout_url)
         catch ex
           return cb ex
-        query = null
         if options.sign_get_request
-          query = sign_request deflated.toString('base64'), @private_key, options.relay_state
+          sign_request uri, deflated.toString('base64'), @private_key, options.relay_state
         else
-          query = SAMLRequest: deflated.toString 'base64'
-          query.RelayState = options.relay_state if options.relay_state?
-        uri.query = _.extend(query, uri.query)
-        uri.search = null
-        uri.query = query
-        cb null, url.format(uri), id
+          uri.searchParams.set('SAMLResponse', deflated.toString 'base64')
+          uri.searchParams.set('RelayState', options.relay_state) if options.relay_state?
+        cb null, uri.toString(), id
 
     # Returns:
     #   Redirect URL to confirm a successful logout.
@@ -719,15 +738,15 @@ module.exports.ServiceProvider =
       zlib.deflateRaw xml, (err, deflated) =>
         return cb err if err?
         try
-          uri = url.parse identity_provider.sso_logout_url
+          uri = new url.URL(identity_provider.sso_logout_url)
         catch ex
           return cb ex
         if options.sign_get_request
-          uri.query = sign_request deflated.toString('base64'), @private_key, options.relay_state, true
+          sign_request uri, deflated.toString('base64'), @private_key, options.relay_state, true
         else
-          uri.query = SAMLResponse: deflated.toString 'base64'
-          uri.query.RelayState = options.relay_state if options.relay_state?
-        cb null, url.format(uri)
+          uri.searchParams.set('SAMLResponse', deflated.toString 'base64')
+          uri.searchParams.set('RelayState', options.relay_state) if options.relay_state?
+        cb null, uri.toString()
 
     # Returns:
     #   XML metadata, used during initial SAML configuration
