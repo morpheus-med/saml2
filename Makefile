@@ -6,7 +6,11 @@ LIBS=$(shell find . -regex "^./lib\/.*\.coffee\$$" | sed s/\.coffee$$/\.js/ | se
 build: $(LIBS)
 
 lib-js/%.js : lib/%.coffee
-	../coffee-script/bin/coffee --bare -c -o $(@D) $(patsubst lib-js/%,lib/%,$(patsubst %.js,%.coffee,$@))
+	set -e ;\
+	coffee_bin_prefix=.. ;\
+	coffee_bin_path=/coffee-script/bin/coffee ;\
+	if [ ! -f "$${coffee_bin_prefix}$${coffee_bin_path}" ]; then coffee_bin_prefix=node_modules; fi ;\
+	$${coffee_bin_prefix}$${coffee_bin_path} --bare -c -o $(@D) $(patsubst lib-js/%,lib/%,$(patsubst %.js,%.coffee,$@))
 
 test-cov:
 	rm -rf lib-js lib-js-cov
