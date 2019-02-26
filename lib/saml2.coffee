@@ -498,7 +498,7 @@ module.exports.ServiceProvider =
         if options.sign_get_request
           sign_request uri, deflated.toString('base64'), @private_key, options.relay_state
         else
-          uri.searchParams.set('SAMLResponse', deflated.toString 'base64')
+          uri.searchParams.set('SAMLRequest', deflated.toString 'base64')
           uri.searchParams.set('RelayState', options.relay_state) if options.relay_state?
         cb null, uri.toString()
 
