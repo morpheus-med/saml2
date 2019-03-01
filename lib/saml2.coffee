@@ -71,7 +71,7 @@ create_metadata = (entity_id, assert_endpoint, logout_endpoint, signing_certific
   .end()
 
 # Creates a LogoutRequest and returns it as a string of xml.
-create_logout_request = (issuer, name_id, session_index, destination) ->
+create_logout_request = (issuer, name_id, name_id_format, session_index, destination) ->
   xmlbuilder.create
     'samlp:LogoutRequest':
       '@xmlns:samlp': XMLNS.SAMLP
@@ -81,7 +81,10 @@ create_logout_request = (issuer, name_id, session_index, destination) ->
       '@IssueInstant': (new Date()).toISOString()
       '@Destination': destination
       'saml:Issuer': issuer
-      'saml:NameID': name_id
+      'saml:NameID': {
+        '#text': name_id,
+        '@Format': name_id_format
+      }
       'samlp:SessionIndex': session_index
   .end()
 
@@ -354,6 +357,7 @@ parse_authn_response = (saml_response, sp_private_key, idp_certificates, allow_u
       cb_wf null
     (cb_wf) -> async.lift(get_name_id) decrypted_assertion, cb_wf
     (name_id, cb_wf) ->
+      return cb_wf new Error("SAML Assertion must contain a NameID") unless name_id?
       user.name_id = name_id.value
       user.name_id_format = name_id.format
       async.lift(get_session_index) decrypted_assertion, cb_wf
@@ -491,7 +495,7 @@ module.exports.ServiceProvider =
     create_logout_request_url: (identity_provider, options, cb) =>
       identity_provider = { sso_logout_url: identity_provider, options: {} } if _.isString(identity_provider)
       options = set_option_defaults options, identity_provider.shared_options, @shared_options
-      xml = create_logout_request @entity_id, options.name_id, options.session_index, identity_provider.sso_logout_url
+      xml = create_logout_request @entity_id, options.name_id, options.name_id_format, options.session_index, identity_provider.sso_logout_url
       zlib.deflateRaw xml, (err, deflated) =>
         return cb err if err?
         uri = new url.URL(identity_provider.sso_logout_url)
@@ -511,7 +515,7 @@ module.exports.ServiceProvider =
     create_logout_response_url: (identity_provider, options, cb) ->
       identity_provider = { sso_logout_url: identity_provider, options: {} } if _.isString(identity_provider)
       options = set_option_defaults options, identity_provider.shared_options, @shared_options
-      
+
       xml = create_logout_response @entity_id, options.in_response_to, identity_provider.sso_logout_url
       zlib.deflateRaw xml, (err, deflated) =>
         return cb err if err?
