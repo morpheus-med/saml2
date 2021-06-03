@@ -165,7 +165,7 @@ check_saml_signature = (xml, certificate, cb) ->
   return false unless signature.length is 1
   sig = new xmlcrypto.SignedXml()
   sig.keyInfoProvider = getKey: -> format_pem(certificate, 'CERTIFICATE')
-  console.log("ADFS Sign :" signature[0].toString())
+  console.log("ADFS Sign :" + signature[0].toString())
   sig.loadSignature signature[0].toString()
   return sig.checkSignature xml
 
