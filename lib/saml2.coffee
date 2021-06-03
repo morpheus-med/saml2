@@ -1,15 +1,18 @@
 _             = require 'underscore'
 async         = _.extend require('async'), require('async-ext')
-crypto        = require 'crypto'
+cryptolib     = require 'crypto'
 debug         = require('debug') 'saml2'
-{parseString} = require 'xml2js'
 url           = require 'url'
 util          = require 'util'
 xmlbuilder    = require 'xmlbuilder'
-xmlcrypto     = require 'xml-crypto'
 xmldom        = require 'xmldom'
 xmlenc        = require 'xml-encryption'
 zlib          = require 'zlib'
+xmldsigjs     = require("xmldsigjs");
+{ Crypto }    = require("node-webcrypto-ossl");
+
+crypto = new Crypto();
+xmldsigjs.Application.setEngine("OpenSSL", crypto);
 
 XMLNS =
   SAML: 'urn:oasis:names:tc:SAML:2.0:assertion'
@@ -29,7 +32,7 @@ create_authn_request = (issuer, assert_endpoint, destination, force_authn, conte
     context_element = _(context.class_refs).map (class_ref) -> 'saml:AuthnContextClassRef': class_ref
     context_element.push '@Comparison': context.comparison
 
-  id = '_' + crypto.randomBytes(21).toString('hex')
+  id = '_' + cryptolib.randomBytes(21).toString('hex')
   xml = xmlbuilder.create
     AuthnRequest:
       '@xmlns': XMLNS.SAMLP
@@ -76,7 +79,7 @@ create_logout_request = (issuer, name_id, name_id_format, session_index, destina
     'samlp:LogoutRequest':
       '@xmlns:samlp': XMLNS.SAMLP
       '@xmlns:saml': XMLNS.SAML
-      '@ID': '_' + crypto.randomBytes(21).toString('hex')
+      '@ID': '_' + cryptolib.randomBytes(21).toString('hex')
       '@Version': '2.0'
       '@IssueInstant': (new Date()).toISOString()
       '@Destination': destination
@@ -93,7 +96,7 @@ create_logout_response = (issuer, in_response_to, destination, status='urn:oasis
   xmlbuilder.create(
     {'samlp:LogoutResponse':
         '@Destination': destination
-        '@ID': '_' + crypto.randomBytes(21).toString('hex')
+        '@ID': '_' + cryptolib.randomBytes(21).toString('hex')
         '@InResponseTo': in_response_to
         '@IssueInstant': (new Date()).toISOString()
         '@Version': '2.0'
@@ -109,7 +112,7 @@ create_logout_response = (issuer, in_response_to, destination, status='urn:oasis
 # has a PEM header, it will just return the original key.
 format_pem = (key, type) ->
   return key if (/-----BEGIN [0-9A-Z ]+-----[^-]*-----END [0-9A-Z ]+-----/g.exec(key))?
-  return "-----BEGIN #{type.toUpperCase()}-----\n" + key.replace(/\n/g, "").match(/.{1,64}/g).join("\n") + "\n-----END #{type.toUpperCase()}-----"
+  return "-----BEGIN #{type.toUpperCase()}-----\n" + key.match(/.{1,64}/g).join("\n") + "\n-----END #{type.toUpperCase()}-----"
 
 # Takes a compressed/base64 enoded @saml_request and @private_key and signs the request using RSA-SHA256. It returns
 # the result as an object containing the query parameters.
@@ -123,7 +126,7 @@ sign_request = (uri, saml_request, private_key, relay_state, response=false) ->
   saml_request_data = "#{action}=" + encodeURIComponent(saml_request)
   relay_state_data = if relay_state? then "&RelayState=" + encodeURIComponent(relay_state) else ""
   sigalg_data = "&SigAlg=" + encodeURIComponent('http://www.w3.org/2001/04/xmldsig-more#rsa-sha256')
-  sign = crypto.createSign 'RSA-SHA256'
+  sign = cryptolib.createSign 'RSA-SHA256'
   sign.update(saml_request_data + relay_state_data + sigalg_data)
 
   if response
@@ -158,14 +161,20 @@ certificate_to_keyinfo = (use, certificate) ->
 # signature checks as it doesn't verify the signature is signing the important content, nor is it preventing the
 # parsing of unsigned content.
 check_saml_signature = (xml, certificate, cb) ->
-  doc = (new xmldom.DOMParser()).parseFromString(xml)
+  doc = xmldsigjs.Parse(xml);
+  signature = doc.getElementsByTagNameNS("http://www.w3.org/2000/09/xmldsig#", "Signature");
 
-  signature = xmlcrypto.xpath(doc, "/*/*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']")
-  return false unless signature.length is 1
-  sig = new xmlcrypto.SignedXml()
-  sig.keyInfoProvider = getKey: -> format_pem(certificate, 'CERTIFICATE')
-  sig.loadSignature signature[0].toString()
-  return sig.checkSignature xml
+  signedXml = new xmldsigjs.SignedXml(doc);
+  signedXml.LoadXml(signature[0]);
+
+  signedXml.Verify()
+  .then((res) ->
+    return res;
+  )
+  .catch((e) ->
+    console.log("Error signature:", e)
+    return false
+  );
 
 # Takes in an xml @dom containing a SAML Status and returns true if at least one status is Success.
 check_status_success = (dom) ->
