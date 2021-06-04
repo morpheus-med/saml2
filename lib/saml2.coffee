@@ -1,4 +1,4 @@
-X509KeyInfo   = require('./x509')
+X509KeyInfo   = require('./x509KeyInfo')
 _             = require 'underscore'
 async         = _.extend require('async'), require('async-ext')
 crypto        = require 'crypto'
