@@ -164,7 +164,7 @@ check_saml_signature = (_xml, certificate, cb) ->
   signature = xmlcrypto.xpath(doc, "//*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']")[0]
   console.log("SIGNATURE : " + signature)
   sig = new xmlcrypto.SignedXml()
-  test = getKey: -> format_pem(certificate, 'CERTIFICATE')
+  test = format_pem(certificate, 'CERTIFICATE')
   console.log("CERTIFICATE : " + test)
   sig.keyInfoProvider = getKey: -> format_pem(certificate, 'CERTIFICATE')
   sig.loadSignature signature
