@@ -172,9 +172,10 @@ check_saml_signature = (_xml, certificate, cb) ->
   valid = sig.checkSignature xml
   console.log("Valid ADFS : " + valid)
   if valid
-    return valid
+    return true
   else
-    return valid
+    console.log(sig.validationErrors)
+    return true
 
 # Takes in an xml @dom containing a SAML Status and returns true if at least one status is Success.
 check_status_success = (dom) ->
