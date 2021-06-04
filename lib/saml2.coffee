@@ -1,4 +1,3 @@
-X509KeyInfo   = require('./x509KeyInfo')
 _             = require 'underscore'
 async         = _.extend require('async'), require('async-ext')
 crypto        = require 'crypto'
@@ -165,10 +164,9 @@ check_saml_signature = (_xml, certificate, cb) ->
   signature = xmlcrypto.xpath(doc, "//*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']")[0]
   console.log("SIGNATURE : " + signature)
   sig = new xmlcrypto.SignedXml()
-  test = new X509KeyInfo(format_pem(certificate, 'CERTIFICATE'))
+  test = format_pem(certificate, 'CERTIFICATE')
   console.log("CERTIFICATE : " + test)
-  sig.signatureAlgorithm = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"
-  sig.keyInfoProvider = new xmlcrypto.KeyInfoProvider(format_pem(certificate, 'CERTIFICATE'))
+  sig.keyInfoProvider = getKey: -> format_pem(certificate, 'CERTIFICATE')
   console.log("KEYINFO:" + sig.keyInfoProvider)
   sig.loadSignature signature
   valid = sig.checkSignature xml
