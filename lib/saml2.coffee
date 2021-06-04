@@ -162,8 +162,10 @@ check_saml_signature = (_xml, certificate, cb) ->
   doc = (new xmldom.DOMParser()).parseFromString(xml)
 
   signature = xmlcrypto.xpath(doc, "//*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']")[0]
-  console.log(signature)
+  console.log("SIGNATURE : " + signature)
   sig = new xmlcrypto.SignedXml()
+  test = getKey: -> format_pem(certificate, 'CERTIFICATE')
+  console.log("CERTIFICATE : " + test)
   sig.keyInfoProvider = getKey: -> format_pem(certificate, 'CERTIFICATE')
   sig.loadSignature signature
   valid = sig.checkSignature xml
