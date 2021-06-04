@@ -172,30 +172,9 @@ check_saml_signature = (_xml, certificate, cb) ->
   valid = sig.checkSignature xml
   console.log("Valid ADFS : " + valid)
   if valid
-    return get_signed_data(doc, sig)
+    return valid
   else
-    return get_signed_data(doc, sig)
-
-# Gets the data that is actually signed according to xml-crypto. This function should mirror the way xml-crypto finds
-# elements for security reasons.
-get_signed_data = (doc, sig) ->
-  _.map sig.references, (ref) ->
-    uri = ref.uri
-    if uri[0] is '#'
-      uri = uri.substring(1)
-
-    elem = []
-    if uri is ""
-      elem = xmlcrypto.xpath(doc, "//*")
-    else
-      for idAttribute in ["Id", "ID"]
-        elem = xmlcrypto.xpath(doc, "//*[@*[local-name(.)='" + idAttribute + "']='" + uri + "']")
-        if elem.length > 0
-          break
-
-    unless elem.length > 0
-      throw new Error("Invalid signature; must be a reference to '#{ref.uri}'")
-    sig.getCanonXml ref.transforms, elem[0], { inclusiveNamespacesPrefixList: ref.inclusiveNamespacesPrefixList }
+    return valid
 
 # Takes in an xml @dom containing a SAML Status and returns true if at least one status is Success.
 check_status_success = (dom) ->
