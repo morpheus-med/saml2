@@ -109,7 +109,7 @@ create_logout_response = (issuer, in_response_to, destination, status='urn:oasis
 # has a PEM header, it will just return the original key.
 format_pem = (key, type) ->
   return key if (/-----BEGIN [0-9A-Z ]+-----[^-]*-----END [0-9A-Z ]+-----/g.exec(key))?
-  return "-----BEGIN #{type.toUpperCase()}-----\n" + key.replace(/\n/g, "").match(/.{1,64}/g).join("\n") + "\n-----END #{type.toUpperCase()}-----"
+  return "-----BEGIN #{type.toUpperCase()}-----\n" + key.match(/.{1,64}/g).join("\n") + "\n-----END #{type.toUpperCase()}-----"
 
 # Takes a compressed/base64 enoded @saml_request and @private_key and signs the request using RSA-SHA256. It returns
 # the result as an object containing the query parameters.
