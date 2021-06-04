@@ -162,12 +162,10 @@ check_saml_signature = (_xml, certificate, cb) ->
   doc = (new xmldom.DOMParser()).parseFromString(xml)
 
   signature = xmlcrypto.xpath(doc, "//*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']")[0]
-  console.log("ADFS Signature: " + signature)
-  return null unless signature.length is 1
   sig = new xmlcrypto.SignedXml()
   sig.keyInfoProvider = getKey: -> format_pem(certificate, 'CERTIFICATE')
-  sig.loadSignature(signature)
-  valid = sig.checkSignature(xml)
+  sig.loadSignature signature
+  valid = sig.checkSignature xml
   console.log("Valid ADFS : " + valid)
   if valid
     return get_signed_data(doc, sig)
