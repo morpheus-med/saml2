@@ -167,6 +167,7 @@ check_saml_signature = (_xml, certificate, cb) ->
   test = format_pem(certificate, 'CERTIFICATE')
   console.log("CERTIFICATE : " + test)
   sig.keyInfoProvider = getKey: -> format_pem(certificate, 'CERTIFICATE')
+  sig.signatureAlgorithm = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"
   sig.loadSignature signature
   valid = sig.checkSignature xml
   console.log("Valid ADFS : " + valid)
