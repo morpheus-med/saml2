@@ -28,10 +28,11 @@
     "mocha": "~1.17.1"
   },
   "dependencies": {
-    "coffee-script": "~1.7.1",
     "async": "~0.2.10",
     "async-ext": "~0.1.4",
+    "coffee-script": "~1.7.1",
     "debug": "^1.0.4",
+    "node-forge": "^0.10.0",
     "underscore": "~1.6.0",
     "xml-crypto": "^2.1.2",
     "xml-encryption": "^1.2.4",
