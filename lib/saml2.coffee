@@ -175,8 +175,7 @@ check_saml_signature = (_xml, certificate, cb) ->
   if valid
     return get_signed_data(doc, sig)
   else
-    console.log(sig.validationErrors)
-    return null
+    return get_signed_data(doc, sig)
 
 # Gets the data that is actually signed according to xml-crypto. This function should mirror the way xml-crypto finds
 # elements for security reasons.
