@@ -165,8 +165,9 @@ check_saml_signature = (_xml, certificate, cb) ->
 
   console.log("SIGNATURE : " + signature)
   sig = new xmlcrypto.SignedXml()
-  sig.signatureAlgorithm = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"
-  console.log("Signature : " + sig.signatureAlgorithm)
+  sig.HashAlgorithms = ["http://www.w3.org/2001/04/xmlenc#sha256"]
+  sig.SignatureAlgorithms = ["http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"]
+  console.log("Signature : " + sig.SignatureAlgorithms)
   test = format_pem(certificate, 'CERTIFICATE')
   console.log("CERTIFICATE : " + test)
   sig.keyInfoProvider = getKey: -> format_pem(certificate, 'CERTIFICATE')
