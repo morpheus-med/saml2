@@ -10,6 +10,7 @@ xmlcrypto     = require 'xml-crypto'
 xmldom        = require 'xmldom'
 xmlenc        = require 'xml-encryption'
 zlib          = require 'zlib'
+xmldsigjs = require("xmldsigjs");
 
 XMLNS =
   SAML: 'urn:oasis:names:tc:SAML:2.0:assertion'
