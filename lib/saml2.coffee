@@ -161,10 +161,11 @@ check_saml_signature = (_xml, certificate, cb) ->
   xml = _xml.replace(/\r\n?/g, '\n')
   doc = (new xmldom.DOMParser()).parseFromString(xml)
 
-  signature = xmlcrypto.xpath(doc.documentElement, "./*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']")
+  signature = xmlcrypto.xpath(doc.documentElement, "//*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']")
 
   console.log("SIGNATURE : " + signature)
   sig = new xmlcrypto.SignedXml()
+  sig.signatureAlgorithm = "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"
   test = format_pem(certificate, 'CERTIFICATE')
   console.log("CERTIFICATE : " + test)
   sig.keyInfoProvider = getKey: -> format_pem(certificate, 'CERTIFICATE')
