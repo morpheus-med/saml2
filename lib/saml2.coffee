@@ -167,6 +167,8 @@ check_saml_signature = (_xml, certificate, cb) ->
   sig = new xmlcrypto.SignedXml()
   sig.HashAlgorithms = ["http://www.w3.org/2001/04/xmlenc#sha256"]
   sig.SignatureAlgorithms = ["http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"]
+  sig.canonicalizationAlgorithm = "http://www.w3.org/2001/10/xml-exc-c14n#"
+
   console.log("Signature : " + sig.SignatureAlgorithms)
   test = format_pem(certificate, 'CERTIFICATE')
   console.log("CERTIFICATE : " + test)
@@ -176,10 +178,10 @@ check_saml_signature = (_xml, certificate, cb) ->
   valid = sig.checkSignature xml
   console.log("Valid ADFS : " + valid)
   if valid
-    return get_signed_data(doc, sig)
+    return true
   else
     console.log(sig.validationErrors)
-    return null
+    return false
 
 # Takes in an xml @dom containing a SAML Status and returns true if at least one status is Success.
 check_status_success = (dom) ->
