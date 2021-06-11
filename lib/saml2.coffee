@@ -161,21 +161,22 @@ check_saml_signature = (_xml, certificate, cb) ->
   xml = _xml.replace(/\r\n?/g, '\n')
   doc = (new xmldom.DOMParser()).parseFromString(xml)
 
-  signature = xmlcrypto.xpath(doc, "//*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']")[0]
+  signature = xmlcrypto.xpath(doc.documentElement, "./*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']")
+
   console.log("SIGNATURE : " + signature)
   sig = new xmlcrypto.SignedXml()
   test = format_pem(certificate, 'CERTIFICATE')
   console.log("CERTIFICATE : " + test)
   sig.keyInfoProvider = getKey: -> format_pem(certificate, 'CERTIFICATE')
   console.log("KEYINFO:" + sig.keyInfoProvider)
-  sig.loadSignature signature
+  sig.loadSignature signature[0]
   valid = sig.checkSignature xml
   console.log("Valid ADFS : " + valid)
   if valid
-    return true
+    return get_signed_data(doc, sig)
   else
     console.log(sig.validationErrors)
-    return true
+    return null
 
 # Takes in an xml @dom containing a SAML Status and returns true if at least one status is Success.
 check_status_success = (dom) ->
