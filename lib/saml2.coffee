@@ -170,7 +170,7 @@ check_saml_signature = (_xml, certificate, cb) ->
 
   signedXml.Verify(format_pem(certificate, 'CERTIFICATE'))
     .then(res => {
-        console.log("Signature status:", res);       // Signature status: true
+        console.log("Signature status:", res);
     })
     .catch(e => console.log(e));
 
