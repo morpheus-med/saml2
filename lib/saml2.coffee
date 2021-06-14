@@ -162,10 +162,10 @@ check_saml_signature = (_xml, certificate, cb) ->
   #xml = _xml.replace(/\r\n?/g, '\n')
   #doc = (new xmldom.DOMParser()).parseFromString(xml)
 
-  doc = XmlDSigJs.Parse(_xml);
+  doc = xmldsigjs.Parse(_xml);
   signature = doc.getElementsByTagNameNS("http://www.w3.org/2000/09/xmldsig#", "Signature");
 
-  signedXml = new XmlDSigJs.SignedXml(doc);
+  signedXml = new xmldsigjs.SignedXml(doc);
   signedXml.LoadXml(signature[0]);
 
   test = signedXml.Verify(format_pem(certificate, 'CERTIFICATE'))
