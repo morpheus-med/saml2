@@ -168,11 +168,9 @@ check_saml_signature = (_xml, certificate, cb) ->
   signedXml = new XmlDSigJs.SignedXml(doc);
   signedXml.LoadXml(signature[0]);
 
-  signedXml.Verify(format_pem(certificate, 'CERTIFICATE'))
-    .then(res => {
-        console.log("Signature status:", res);
-    })
-    .catch(e => console.log(e));
+  test = signedXml.Verify(format_pem(certificate, 'CERTIFICATE'))
+
+  console.log(test)
 
   #signature = xmlcrypto.xpath(doc.documentElement, "//*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']")
 
