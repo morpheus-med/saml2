@@ -11,11 +11,10 @@ xmldom        = require 'xmldom'
 xmlenc        = require 'xml-encryption'
 zlib          = require 'zlib'
 xmldsigjs     = require("xmldsigjs");
-WebCrypto     = require("node-webcrypto-ossl");
+Crypto     = require("node-webcrypto-ossl");
 
-crypto = new WebCrypto();
+crypto = new Crypto();
 xmldsigjs.Application.setEngine("OpenSSL", crypto);
-
 
 XMLNS =
   SAML: 'urn:oasis:names:tc:SAML:2.0:assertion'
