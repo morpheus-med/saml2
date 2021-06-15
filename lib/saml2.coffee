@@ -162,11 +162,8 @@ certificate_to_keyinfo = (use, certificate) ->
 # This function calls @cb with no error if an XML document is signed with the provided cert. This is NOT sufficient for
 # signature checks as it doesn't verify the signature is signing the important content, nor is it preventing the
 # parsing of unsigned content.
-check_saml_signature = (_xml, certificate, cb) ->
-  #xml = _xml.replace(/\r\n?/g, '\n')
-  #doc = (new xmldom.DOMParser()).parseFromString(xml)
-
-  doc = xmldsigjs.Parse(_xml);
+check_saml_signature = (xml, certificate, cb) ->
+  doc = xmldsigjs.Parse(xml);
   signature = doc.getElementsByTagNameNS("http://www.w3.org/2000/09/xmldsig#", "Signature");
 
   signedXml = new xmldsigjs.SignedXml(doc);
@@ -174,36 +171,12 @@ check_saml_signature = (_xml, certificate, cb) ->
 
   signedXml.Verify()
   .then((res) ->
-    console.log("Signature status:", res);
+    return res;
   )
   .catch((e) ->
-    console.log(e)
+    console.log("Error signature:", e)
+    return false
   );
-
-  #signature = xmlcrypto.xpath(doc.documentElement, "//*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']")
-
-  #console.log("SIGNATURE : " + signature)
-
-  
-
-  #sig = new xmlcrypto.SignedXml()
-  #sig.HashAlgorithms = ["http://www.w3.org/2001/04/xmlenc#sha256"]
-  #sig.SignatureAlgorithms = ["http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"]
-  #sig.canonicalizationAlgorithm = "http://www.w3.org/2001/10/xml-exc-c14n#"
-
-  #console.log("Signature : " + sig.SignatureAlgorithms)
-  #test = format_pem(certificate, 'CERTIFICATE')
-  #console.log("CERTIFICATE : " + test)
-  #sig.keyInfoProvider = getKey: -> format_pem(certificate, 'CERTIFICATE')
-  #console.log("KEYINFO:" + sig.keyInfoProvider)
-  #sig.loadSignature signature[0]
-  #valid = sig.checkSignature xml
-  #console.log("Valid ADFS : " + valid)
-  #if valid
-  #  return true
-  #else
-  #  console.log(sig.validationErrors)
-  #  return false
 
 # Takes in an xml @dom containing a SAML Status and returns true if at least one status is Success.
 check_status_success = (dom) ->
