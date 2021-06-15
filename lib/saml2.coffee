@@ -11,7 +11,7 @@ xmldom        = require 'xmldom'
 xmlenc        = require 'xml-encryption'
 zlib          = require 'zlib'
 xmldsigjs     = require("xmldsigjs");
-Crypto     = require("node-webcrypto-ossl");
+{ Crypto }    = require("node-webcrypto-ossl");
 
 crypto = new Crypto();
 xmldsigjs.Application.setEngine("OpenSSL", crypto);
