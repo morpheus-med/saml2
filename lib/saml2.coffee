@@ -1,6 +1,6 @@
 _             = require 'underscore'
 async         = _.extend require('async'), require('async-ext')
-crypto        = require 'crypto'
+cryptolib        = require 'crypto'
 debug         = require('debug') 'saml2'
 {parseString} = require 'xml2js'
 url           = require 'url'
@@ -11,9 +11,9 @@ xmldom        = require 'xmldom'
 xmlenc        = require 'xml-encryption'
 zlib          = require 'zlib'
 xmldsigjs     = require("xmldsigjs");
-{ WebCrypto } = require("node-webcrypto-ossl");
+{ Crypto }    = require("node-webcrypto-ossl");
 
-crypto = new WebCrypto();
+crypto = new Crypto();
 xmldsigjs.Application.setEngine("OpenSSL", crypto);
 
 XMLNS =
@@ -34,7 +34,7 @@ create_authn_request = (issuer, assert_endpoint, destination, force_authn, conte
     context_element = _(context.class_refs).map (class_ref) -> 'saml:AuthnContextClassRef': class_ref
     context_element.push '@Comparison': context.comparison
 
-  id = '_' + crypto.randomBytes(21).toString('hex')
+  id = '_' + cryptolib.randomBytes(21).toString('hex')
   xml = xmlbuilder.create
     AuthnRequest:
       '@xmlns': XMLNS.SAMLP
@@ -81,7 +81,7 @@ create_logout_request = (issuer, name_id, name_id_format, session_index, destina
     'samlp:LogoutRequest':
       '@xmlns:samlp': XMLNS.SAMLP
       '@xmlns:saml': XMLNS.SAML
-      '@ID': '_' + crypto.randomBytes(21).toString('hex')
+      '@ID': '_' + cryptolib.randomBytes(21).toString('hex')
       '@Version': '2.0'
       '@IssueInstant': (new Date()).toISOString()
       '@Destination': destination
@@ -98,7 +98,7 @@ create_logout_response = (issuer, in_response_to, destination, status='urn:oasis
   xmlbuilder.create(
     {'samlp:LogoutResponse':
         '@Destination': destination
-        '@ID': '_' + crypto.randomBytes(21).toString('hex')
+        '@ID': '_' + cryptolib.randomBytes(21).toString('hex')
         '@InResponseTo': in_response_to
         '@IssueInstant': (new Date()).toISOString()
         '@Version': '2.0'
@@ -128,7 +128,7 @@ sign_request = (uri, saml_request, private_key, relay_state, response=false) ->
   saml_request_data = "#{action}=" + encodeURIComponent(saml_request)
   relay_state_data = if relay_state? then "&RelayState=" + encodeURIComponent(relay_state) else ""
   sigalg_data = "&SigAlg=" + encodeURIComponent('http://www.w3.org/2001/04/xmldsig-more#rsa-sha256')
-  sign = crypto.createSign 'RSA-SHA256'
+  sign = cryptolib.createSign 'RSA-SHA256'
   sign.update(saml_request_data + relay_state_data + sigalg_data)
 
   if response
