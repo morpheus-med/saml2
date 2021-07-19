@@ -306,6 +306,7 @@ parse_assertion_attributes = (dom) ->
 # into nicer names. Attributes that are not expected are ignored, and attributes with more than one value with have
 # all values except the first one dropped.
 pretty_assertion_attributes = (assertion_attributes) ->
+  console.log("test 3");
   claim_map =
     "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress": "email"
     "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname": "given_name"
@@ -336,6 +337,7 @@ pretty_assertion_attributes = (assertion_attributes) ->
     .map(([k, v]) -> [claim_map[k], v[0]])
     .object()
     .value()
+  console.log("test 4");
 
 # Takes a dom of a saml_response, a private key used to decrypt it and the certificate of the identity provider that
 # issued it and will return a user object containing the attributes or an error if keys are incorrect or the response
@@ -343,6 +345,8 @@ pretty_assertion_attributes = (assertion_attributes) ->
 parse_authn_response = (saml_response, sp_private_key, idp_certificates, allow_unencrypted, cb) ->
   user = {}
   decrypted_assertion = null
+
+  console.log("test 1");
 
   async.waterfall [
     (cb_wf) ->
@@ -378,6 +382,7 @@ parse_authn_response = (saml_response, sp_private_key, idp_certificates, allow_u
       user = _.extend user, attributes: assertion_attributes
       cb_wf null, { user }
   ], cb
+  console.log("test 2");
 
 parse_logout_request = (dom) ->
   request = dom.getElementsByTagNameNS(XMLNS.SAMLP, "LogoutRequest")
@@ -563,4 +568,3 @@ if process.env.NODE_ENV is "test"
   module.exports.get_session_index = get_session_index
   module.exports.parse_assertion_attributes = parse_assertion_attributes
   module.exports.set_option_defaults = set_option_defaults
-
