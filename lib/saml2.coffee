@@ -497,6 +497,7 @@ module.exports.ServiceProvider =
           _.extend response, result
           cb_wf null, response
       ], cb
+      console.log("test6")
 
     # ----- Optional -----
 
