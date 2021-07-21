@@ -386,14 +386,12 @@ parse_authn_response = (saml_response, sp_private_key, idp_certificates, allow_u
         assertion.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:' + prefix, XMLNS.SAML) if prefix
         cb_wf null, assertion.toString()
     (result, cb_wf) ->
-      try
-        debug result
-        decrypted_assertion = (new xmldom.DOMParser()).parseFromString(result)
-        cb_wf null
-      catch err
-        console.log(err)
+      debug result
+      decrypted_assertion = (new xmldom.DOMParser()).parseFromString(result)
+      cb_wf null
       unless _.some(idp_certificates, (cert) -> check_saml_signature result, cert)
-          return cb_wf new Error("SAML Assertion signature check failed! (checked #{idp_certificates.length} certificate(s))")
+        return cb_wf new Error("SAML Assertion signature check failed! (checked #{idp_certificates.length} certificate(s))")
+      cb_wf null
     (cb_wf) -> async.lift(get_name_id) decrypted_assertion, cb_wf
     (name_id, cb_wf) ->
       return cb_wf new Error("SAML Assertion must contain a NameID") unless name_id?
