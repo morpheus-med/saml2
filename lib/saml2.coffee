@@ -169,7 +169,7 @@ check_saml_signature = (xml, certificate, cb) ->
     signature = doc.getElementsByTagNameNS("http://www.w3.org/2000/09/xmldsig#", "Signature");
     console.log("signature : " + signature);
 
-    if(signature === "")
+    if signature == ""
       signedXml = new xmldsigjs.SignedXml(doc);
       signedXml.LoadXml(signature[0]);
 
