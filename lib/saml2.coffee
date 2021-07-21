@@ -388,7 +388,6 @@ parse_authn_response = (saml_response, sp_private_key, idp_certificates, allow_u
     (result, cb_wf) ->
       debug result
       decrypted_assertion = (new xmldom.DOMParser()).parseFromString(result)
-      cb_wf null
       unless _.some(idp_certificates, (cert) -> check_saml_signature result, cert)
         return cb_wf new Error("SAML Assertion signature check failed! (checked #{idp_certificates.length} certificate(s))")
       cb_wf null
