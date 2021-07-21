@@ -375,7 +375,7 @@ parse_authn_response = (saml_response, sp_private_key, idp_certificates, allow_u
     (cb_wf) ->
       decrypt_assertion saml_response, sp_private_key, (err, result) ->
         return cb_wf null, result unless err?
-        return cb_wf err, result unless allow_unencrypted and err.message ==  "Expected 1 EncryptedAssertion; found 0."
+        return cb_wf err, result unless allow_unencrypted
         assertion = saml_response.getElementsByTagNameNS(XMLNS.SAML, 'Assertion')
         unless assertion.length is 1
           return cb_wf new Error("Expected 1 Assertion or 1 EncryptedAssertion; found #{assertion.length}")
@@ -386,14 +386,14 @@ parse_authn_response = (saml_response, sp_private_key, idp_certificates, allow_u
         assertion.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:' + prefix, XMLNS.SAML) if prefix
         cb_wf null, assertion.toString()
     (result, cb_wf) ->
-      # Validate the signature
-      debug result
       try
+        debug result
         decrypted_assertion = (new xmldom.DOMParser()).parseFromString(result)
-        _.some(idp_certificates, (cert) -> check_saml_signature result, cert)
+        cb_wf null
       catch err
-        cb_wf new Error("SAML Assertion signature check failed!")
-      # cb_wf null
+        console.log(err)
+      unless _.some(idp_certificates, (cert) -> check_saml_signature result, cert)
+          return cb_wf new Error("SAML Assertion signature check failed! (checked #{idp_certificates.length} certificate(s))")
     (cb_wf) -> async.lift(get_name_id) decrypted_assertion, cb_wf
     (name_id, cb_wf) ->
       return cb_wf new Error("SAML Assertion must contain a NameID") unless name_id?
