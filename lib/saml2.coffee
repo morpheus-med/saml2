@@ -408,8 +408,6 @@ parse_authn_response = (saml_response, sp_private_key, idp_certificates, allow_u
       user = _.extend user, attributes: assertion_attributes
       cb_wf null, { user }
   ], cb
-  .catch(error)
-
   console.log("test 2");
 
 parse_logout_request = (dom) ->
