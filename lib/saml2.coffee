@@ -391,7 +391,7 @@ parse_authn_response = (saml_response, sp_private_key, idp_certificates, allow_u
       try
         decrypted_assertion = (new xmldom.DOMParser()).parseFromString(result)
         _.some(idp_certificates, (cert) -> check_saml_signature result, cert)
-      catch error
+      catch err
         cb_wf new Error("SAML Assertion signature check failed!")
       cb_wf null
     (cb_wf) -> async.lift(get_name_id) decrypted_assertion, cb_wf
