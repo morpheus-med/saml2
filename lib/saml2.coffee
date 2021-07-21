@@ -117,6 +117,7 @@ format_pem = (key, type) ->
 # Takes a compressed/base64 enoded @saml_request and @private_key and signs the request using RSA-SHA256. It returns
 # the result as an object containing the query parameters.
 sign_request = (uri, saml_request, private_key, relay_state, response=false) ->
+  console.log("test 24")
   action = if response then "SAMLResponse" else "SAMLRequest"
   data = "#{action}=" + encodeURIComponent(saml_request)
   if relay_state
@@ -139,7 +140,7 @@ sign_request = (uri, saml_request, private_key, relay_state, response=false) ->
 
   uri.searchParams.set 'SigAlg', 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256'
   uri.searchParams.set 'Signature', sign.sign(format_pem(private_key, 'PRIVATE KEY'), 'base64')
-
+  console.log("test 25")
   uri
 
 # Converts a pem certificate to a KeyInfo object for use with XML.
@@ -161,11 +162,14 @@ certificate_to_keyinfo = (use, certificate) ->
 # signature checks as it doesn't verify the signature is signing the important content, nor is it preventing the
 # parsing of unsigned content.
 check_saml_signature = (xml, certificate, cb) ->
+  console.log("test 26")
   doc = xmldsigjs.Parse(xml);
   signature = doc.getElementsByTagNameNS("http://www.w3.org/2000/09/xmldsig#", "Signature");
 
   signedXml = new xmldsigjs.SignedXml(doc);
   signedXml.LoadXml(signature[0]);
+
+  console.log("test 27")
 
   signedXml.Verify()
   .then((res) ->
@@ -187,6 +191,7 @@ check_status_success = (dom) ->
   false
 
 get_status = (dom) ->
+  console.log("test 28")
   status_list = {}
   status = dom.getElementsByTagNameNS(XMLNS.SAMLP, 'Status')
   return status_list unless status.length is 1
@@ -203,6 +208,7 @@ get_status = (dom) ->
           if attr.name is 'Value'
             status_list[top_status].push attr.value
   status_list
+  console.log("test 29")
 
 to_error = (err) ->
   return null unless err?
@@ -213,9 +219,10 @@ to_error = (err) ->
 # @cb will be called with an error if the decryption fails, or the EncryptedAssertion cannot be found. If successful,
 # it will be called with the decrypted data as a string.
 decrypt_assertion = (dom, private_key, cb) ->
+  console.log("test 30")
   # This is needed because xmlenc sometimes throws an exception, and sometimes calls the passed in callback.
   cb = _.wrap cb, (fn, err, args...) -> setTimeout (-> fn to_error(err), args...), 0
-
+  console.log("test 31")
   try
     encrypted_assertion = dom.getElementsByTagNameNS(XMLNS.SAML, 'EncryptedAssertion')
     return cb new Error("Expected 1 EncryptedAssertion; found #{encrypted_assertion.length}.") unless encrypted_assertion.length is 1
@@ -231,6 +238,7 @@ decrypt_assertion = (dom, private_key, cb) ->
 # InResponseTo attributes of the Response if present. It will throw an error if the Response is missing or does not
 # appear to be valid.
 parse_response_header = (dom) ->
+  console.log("test 32")
   for response_type in ['Response', 'LogoutResponse', 'LogoutRequest']
     response = dom.getElementsByTagNameNS(XMLNS.SAMLP, response_type)
     break if response.length > 0
@@ -247,11 +255,14 @@ parse_response_header = (dom) ->
         response_header.in_response_to = attr.value
       when "ID"
         response_header.id = attr.value
+  console.log("test 33")
   response_header
+  console.log("test 34")
 
 # Takes in an xml @dom of an object containing a SAML Assertion and returns the NameID and format. If there is no NameID found,
 # it will return null. It will throw an error if the Assertion is missing or does not appear to be valid.
 get_name_id = (dom) ->
+  console.log("test 35")
   assertion = dom.getElementsByTagNameNS(XMLNS.SAML, 'Assertion')
   throw new Error("Expected 1 Assertion; found #{assertion.length}") unless assertion.length is 1
 
@@ -259,6 +270,7 @@ get_name_id = (dom) ->
   throw new Error("Expected 1 Subject; found #{subject.length}") unless subject.length is 1
 
   nameid = subject[0].getElementsByTagNameNS(XMLNS.SAML, 'NameID')
+  console.log("test 36")
   return null unless nameid.length is 1
 
   {
@@ -269,6 +281,7 @@ get_name_id = (dom) ->
 # Takes in an xml @dom of an object containing a SAML Assertion and returns the SessionIndex. It will throw an error
 # if there is no SessionIndex, no Assertion, or the Assertion does not appear to be valid.
 get_session_index = (dom) ->
+  console.log("test 37");
   assertion = dom.getElementsByTagNameNS(XMLNS.SAML, 'Assertion')
   throw new Error("Expected 1 Assertion; found #{assertion.length}") unless assertion.length is 1
 
@@ -284,6 +297,7 @@ get_session_index = (dom) ->
 # Takes in an xml @dom of an object containing a SAML Assertion and returns and object containing the attributes
 # contained within the Assertion. It will throw an error if the Assertion is missing or does not appear to be valid.
 parse_assertion_attributes = (dom) ->
+  console.log("test 17");
   assertion = dom.getElementsByTagNameNS(XMLNS.SAML, 'Assertion')
   throw new Error("Expected 1 Assertion; found #{assertion.length}") unless assertion.length is 1
 
@@ -300,7 +314,9 @@ parse_assertion_attributes = (dom) ->
     attribute_values = attribute.getElementsByTagNameNS(XMLNS.SAML, 'AttributeValue')
     assertion_attributes[attribute_name] = _(attribute_values).map (attribute_value) ->
       attribute_value.childNodes[0]?.data or ''
+  console.log("test 38")
   assertion_attributes
+  console.log("test 18");
 
 # Takes in an object containing SAML Assertion Attributes and returns an object with certain common attributes changed
 # into nicer names. Attributes that are not expected are ignored, and attributes with more than one value with have
@@ -385,6 +401,7 @@ parse_authn_response = (saml_response, sp_private_key, idp_certificates, allow_u
   console.log("test 2");
 
 parse_logout_request = (dom) ->
+  console.log("test 40")
   request = dom.getElementsByTagNameNS(XMLNS.SAMLP, "LogoutRequest")
   throw new Error("Expected 1 LogoutRequest; found #{request.length}") unless request.length is 1
 
@@ -396,8 +413,9 @@ parse_logout_request = (dom) ->
   request.name_id = name_id[0].firstChild?.data if name_id.length is 1
   session_index = dom.getElementsByTagNameNS(XMLNS.SAMLP, 'SessionIndex')
   request.session_index = session_index[0].firstChild?.data if session_index.length is 1
-
+  console.log("test 41")
   request
+  console.log("test 42")
 
 set_option_defaults = (request_options, idp_options, sp_options) ->
   _.defaults({}, request_options, idp_options, sp_options)
@@ -419,6 +437,7 @@ module.exports.ServiceProvider =
     #   options
     #   cb
     create_login_request_url: (identity_provider, options, cb) ->
+      console.log("test 43")
       options = set_option_defaults options, identity_provider.shared_options, @shared_options
 
       { id, xml } = create_authn_request @entity_id, @assert_endpoint, identity_provider.sso_login_url, options.force_authn, options.auth_context, options.nameid_format
@@ -431,6 +450,7 @@ module.exports.ServiceProvider =
           uri.searchParams.set('SAMLRequest', deflated.toString 'base64')
           uri.searchParams.set('RelayState', options.relay_state) if options.relay_state?
         cb null, uri.toString(), id
+      console.log("test 44")
 
     # Returns:
     #   An object containing the parsed response for a redirect assert.
@@ -440,9 +460,11 @@ module.exports.ServiceProvider =
     #   options
     #   cb
     redirect_assert: (identity_provider, options, cb) ->
+      console.log("test 45")
       options = _.extend(options, {get_request: true})
       options = set_option_defaults options, identity_provider.shared_options, @shared_options
       @_assert identity_provider, options, cb
+      console.log("test 46")
 
 
     # Returns:
@@ -452,6 +474,7 @@ module.exports.ServiceProvider =
     #   options
     #   cb
     post_assert: (identity_provider, options, cb) ->
+      console.log("test 47")
       options = _.extend(options, {get_request: false})
       options = set_option_defaults options, identity_provider.shared_options, @shared_options
       @_assert identity_provider, options, cb
@@ -461,13 +484,14 @@ module.exports.ServiceProvider =
     _assert: (identity_provider, options, cb) ->
       unless options.request_body?.SAMLResponse? or options.request_body?.SAMLRequest?
         return setImmediate cb, new Error("Request body does not contain SAMLResponse or SAMLRequest.")
-
+      console.log("test 48")
       saml_response = null
       decrypted_assertion = null
       response = {}
 
       async.waterfall [
         (cb_wf) ->
+          console.log("test 49")
           raw = Buffer.from(options.request_body.SAMLResponse or options.request_body.SAMLRequest, 'base64')
           # Inflate response for redirect requests before parsing it.
           if (options.get_request)
