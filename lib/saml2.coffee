@@ -168,19 +168,20 @@ check_saml_signature = (xml, certificate, cb) ->
     console.log(xml);
     signature = doc.getElementsByTagNameNS("http://www.w3.org/2000/09/xmldsig#", "Signature");
     console.log("signature : " + signature);
-    signedXml = new xmldsigjs.SignedXml(doc);
-    signedXml.LoadXml(signature[0]);
 
-    console.log("test 27")
+    if(signature)
+      signedXml = new xmldsigjs.SignedXml(doc);
+      signedXml.LoadXml(signature[0]);
 
-    signedXml.Verify()
-    .then((res) ->
-      return res;
-    )
-    .catch((e) ->
-      console.log("Error signature:", e)
-      return false
-    );
+      signedXml.Verify()
+      .then((res) ->
+        return res;
+      )
+      .catch((e) ->
+        console.log("Error signature:", e)
+        return false
+      );
+    return false
   catch error
     console.error(error);
     return false
