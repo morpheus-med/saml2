@@ -163,18 +163,19 @@ certificate_to_keyinfo = (use, certificate) ->
 check_saml_signature = (xml, certificate, cb) ->
   doc = xmldsigjs.Parse(xml);
   signature = doc.getElementsByTagNameNS("http://www.w3.org/2000/09/xmldsig#", "Signature");
+  if signature? && signature.length > 0
+    signedXml = new xmldsigjs.SignedXml(doc);
+    signedXml.LoadXml(signature[0]);
 
-  signedXml = new xmldsigjs.SignedXml(doc);
-  signedXml.LoadXml(signature[0]);
-
-  signedXml.Verify()
-  .then((res) ->
-    return res;
-  )
-  .catch((e) ->
-    console.log("Error signature:", e)
-    return false
-  );
+    signedXml.Verify()
+    .then((res) ->
+      return res;
+    )
+    .catch((e) ->
+      console.log("Error signature:", e)
+      return false
+    );
+  return false
 
 # Takes in an xml @dom containing a SAML Status and returns true if at least one status is Success.
 check_status_success = (dom) ->
