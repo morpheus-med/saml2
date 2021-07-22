@@ -163,7 +163,7 @@ certificate_to_keyinfo = (use, certificate) ->
 check_saml_signature = (xml, certificate, cb) ->
   doc = xmldsigjs.Parse(xml);
   signature = doc.getElementsByTagNameNS("http://www.w3.org/2000/09/xmldsig#", "Signature");
-  if signature.length > 0
+  if signature? && signature.length > 0
     signedXml = new xmldsigjs.SignedXml(doc);
     signedXml.LoadXml(signature[0]);
 
