@@ -479,12 +479,12 @@ module.exports.ServiceProvider =
           switch
             when saml_response.getElementsByTagNameNS(XMLNS.SAMLP, 'Response').length is 1
               unless check_status_success(saml_response)
-                cb_wf new SAMLError("SAML Response was not success!", { status: get_status(saml_response) })
+                return cb_wf new SAMLError("SAML Response was not success!", { status: get_status(saml_response) })
               response.type = 'authn_response'
               parse_authn_response saml_response, @private_key, identity_provider.certificates, options.allow_unencrypted_assertion, cb_wf
             when saml_response.getElementsByTagNameNS(XMLNS.SAMLP, 'LogoutResponse').length is 1
               unless check_status_success(saml_response)
-                cb_wf new SAMLError("SAML Response was not success!", { status: get_status(saml_response) })
+                return cb_wf new SAMLError("SAML Response was not success!", { status: get_status(saml_response) })
               response.type = 'logout_response'
               setImmediate cb_wf, null, {}
             when saml_response.getElementsByTagNameNS(XMLNS.SAMLP, 'LogoutRequest').length is 1
@@ -565,4 +565,3 @@ if process.env.NODE_ENV is "test"
   module.exports.get_session_index = get_session_index
   module.exports.parse_assertion_attributes = parse_assertion_attributes
   module.exports.set_option_defaults = set_option_defaults
-
