@@ -132,11 +132,11 @@ describe 'saml2', ->
 
         assert(
           has_attribute(
-            logout_service, 'Binding', 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect'),
+            logout_service, 'Binding', 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST'),
           "Expected to find an SingleLogoutService with redirect binding.")
 
         assert(
-          has_attribute logout_service, 'Location', 'https://sp.example.com/assert',
+          has_attribute logout_service, 'Location', LOGOUT_ENDPOINT,
           "Expected to find an SingleLogoutService with location 'htps://sp.example.com/assert'")
 
       it 'contains only one SPSSODescriptor', ->
@@ -470,6 +470,7 @@ describe 'saml2', ->
           type: 'authn_response'
           user:
             name_id: 'tstudent',
+            name_id_format: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
             session_index: '_3'
             given_name: 'Test'
             attributes:
@@ -578,6 +579,7 @@ describe 'saml2', ->
           type: 'authn_response'
           user:
             name_id: undefined
+            name_id_format: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress'
             session_index: '_4'
             session_not_on_or_after: '2016-02-11T21:12:09Z'
             attributes: {}
@@ -649,6 +651,7 @@ describe 'saml2', ->
             type: 'authn_response'
             user:
               name_id: undefined
+              name_id_format: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress'
               session_index: null
               session_not_on_or_after: '2016-02-11T21:12:09Z'
               attributes: {}
