@@ -496,7 +496,9 @@ parse_authn_response = (saml_response, sp_private_keys, idp_certificates, allow_
       # Populate attributes
       try
         session_info = get_session_info validated_assertion, require_session_index
-        user.name_id = get_name_id validated_assertion
+        name_id = get_name_id validated_assertion
+        user.name_id = name_id.value
+        user.name_id_format = name_id.format
         user.session_index = session_info.index
         if session_info.not_on_or_after?
           user.session_not_on_or_after = session_info.not_on_or_after
