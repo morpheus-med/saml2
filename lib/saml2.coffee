@@ -84,7 +84,7 @@ create_metadata = (entity_id, assert_endpoint, logout_endpoint, signing_certific
   .end()
 
 # Creates a LogoutRequest and returns it as a string of xml.
-create_logout_request = (issuer, name_id, session_index, destination) ->
+create_logout_request = (issuer, name_id, name_id_format, session_index, destination) ->
   id = '_' + crypto.randomBytes( 21 ).toString( 'hex' )
   xml = xmlbuilder.create
     'samlp:LogoutRequest':
@@ -95,7 +95,10 @@ create_logout_request = (issuer, name_id, session_index, destination) ->
       '@IssueInstant': (new Date()).toISOString()
       '@Destination': destination
       'saml:Issuer': issuer
-      'saml:NameID': name_id
+      'saml:NameID': {
+        '#text': name_id,
+        '@Format': name_id_format
+      }
       'samlp:SessionIndex': session_index
   .end()
 
@@ -695,7 +698,7 @@ module.exports.ServiceProvider =
     create_logout_request_url: (identity_provider, options, cb) =>
       identity_provider = { sso_logout_url: identity_provider, options: {} } if _.isString(identity_provider)
       options = set_option_defaults options, identity_provider.shared_options, @shared_options
-      {id, xml} = create_logout_request @entity_id, options.name_id, options.session_index, identity_provider.sso_logout_url
+      {id, xml} = create_logout_request @entity_id, options.name_id, options.name_id_format, options.session_index, identity_provider.sso_logout_url
       zlib.deflateRaw xml, (err, deflated) =>
         return cb err if err?
         # XXX Upstream merge conflict, kept Arterys

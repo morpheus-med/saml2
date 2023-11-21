@@ -146,16 +146,15 @@ describe 'saml2', ->
         assert.equal(
           sp_sso_descriptor.length, 1, "Expected 1 SP SSO descriptor; found #{sp_sso_descriptor.length}")
         
-        # TODO: Add this tests from Tristan back? https://github.com/morpheus-med/saml2/pull/3/commits/21c7b25b6a58a1c51d239820997811e344664696
-        # assert _(entity_descriptor.getElementsByTagNameNS('urn:oasis:names:tc:SAML:2.0:metadata', 'AssertionConsumerService')).some((assertion) ->
-        #   _(assertion.attributes).some((attr) -> attr.name is 'Binding' and attr.value is 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST') and
-        #     _(assertion.attributes).some((attr) -> attr.name is 'Location' and attr.value is assert_endpoint))
-        #   , "Expected to find an AssertionConsumerService with POST binding and location 'https://sp.example.com/assert'"
+        assert _(entity_descriptor.getElementsByTagNameNS('urn:oasis:names:tc:SAML:2.0:metadata', 'AssertionConsumerService')).some((assertion) ->
+          _(assertion.attributes).some((attr) -> attr.name is 'Binding' and attr.value is 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST') and
+            _(assertion.attributes).some((attr) -> attr.name is 'Location' and attr.value is ASSERT_ENDPOINT))
+          , "Expected to find an AssertionConsumerService with POST binding and location 'https://sp.example.com/assert'"
 
-        # assert _(entity_descriptor.getElementsByTagNameNS('urn:oasis:names:tc:SAML:2.0:metadata', 'SingleLogoutService')).some((assertion) ->
-        #   _(assertion.attributes).some((attr) -> attr.name is 'Binding' and attr.value is 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST') and
-        #     _(assertion.attributes).some((attr) -> attr.name is 'Location' and attr.value is logout_endpoint))
-        #   , "Expected to find a SingleLogoutService with redirect binding and location 'https://sp.example.com/logout'"
+        assert _(entity_descriptor.getElementsByTagNameNS('urn:oasis:names:tc:SAML:2.0:metadata', 'SingleLogoutService')).some((assertion) ->
+          _(assertion.attributes).some((attr) -> attr.name is 'Binding' and attr.value is 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST') and
+            _(assertion.attributes).some((attr) -> attr.name is 'Location' and attr.value is LOGOUT_ENDPOINT))
+          , "Expected to find a SingleLogoutService with redirect binding and location 'https://sp.example.com/logout'"
 
     describe 'format_pem', ->
       it 'formats an unformatted private key', ->
