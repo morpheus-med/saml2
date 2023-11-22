@@ -12,7 +12,8 @@
     "build": "coffee --bare -c -o lib-js lib",
     "test": "NODE_ENV=test mocha --require coffeescript/register test/*.coffee",
     "test-cov": "NODE_ENV=test nyc --extension .coffee -r html -r text mocha --require coffeescript/register test/*.coffee",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "install": "npm run build"
   },
   "repository": {
     "type": "git",

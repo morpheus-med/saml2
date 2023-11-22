@@ -137,7 +137,7 @@ describe 'saml2', ->
 
         assert(
           has_attribute logout_service, 'Location', LOGOUT_ENDPOINT,
-          "Expected to find an SingleLogoutService with location 'htps://sp.example.com/assert'")
+          "Expected to find an SingleLogoutService with location 'htps://sp.example.com/logout'")
 
       it 'contains only one SPSSODescriptor', ->
         sp_sso_descriptor = entity_descriptor.getElementsByTagNameNS(
@@ -154,7 +154,7 @@ describe 'saml2', ->
         assert _(entity_descriptor.getElementsByTagNameNS('urn:oasis:names:tc:SAML:2.0:metadata', 'SingleLogoutService')).some((assertion) ->
           _(assertion.attributes).some((attr) -> attr.name is 'Binding' and attr.value is 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST') and
             _(assertion.attributes).some((attr) -> attr.name is 'Location' and attr.value is LOGOUT_ENDPOINT))
-          , "Expected to find a SingleLogoutService with redirect binding and location 'https://sp.example.com/logout'"
+          , "Expected to find a SingleLogoutService with POST binding and location 'https://sp.example.com/logout'"
 
     describe 'format_pem', ->
       it 'formats an unformatted private key', ->
