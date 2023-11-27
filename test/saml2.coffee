@@ -137,7 +137,7 @@ describe 'saml2', ->
 
         assert(
           has_attribute logout_service, 'Location', LOGOUT_ENDPOINT,
-          "Expected to find an SingleLogoutService with location 'htps://sp.example.com/assert'")
+          "Expected to find an SingleLogoutService with location 'htps://sp.example.com/logout'")
 
       it 'contains only one SPSSODescriptor', ->
         sp_sso_descriptor = entity_descriptor.getElementsByTagNameNS(
