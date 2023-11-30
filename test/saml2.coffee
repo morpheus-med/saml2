@@ -553,7 +553,7 @@ describe 'saml2', ->
 
       sp.post_assert idp, request_options, (err, response) ->
         assert (err instanceof Error), "Did not get expected error."
-        assert (/may be invalid/.test(err.message)), "Unexpected error message:" + err.message
+        assert (/did not contain a SAML Assertion/.test(err.message)), "Unexpected error message:" + err.message
         done()
 
     it 'correctly parses an empty NameID', (done) ->

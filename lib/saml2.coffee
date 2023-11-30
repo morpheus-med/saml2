@@ -9,6 +9,7 @@ xmlcrypto     = require 'xml-crypto'
 xmldom        = require '@xmldom/xmldom'
 xmlenc        = require 'xml-encryption'
 zlib          = require 'zlib'
+xpath          = require 'xpath'
 SignedXml     = require('xml-crypto').SignedXml
 
 XMLNS =
@@ -51,9 +52,27 @@ create_authn_request = (issuer, assert_endpoint, destination, force_authn, conte
 
 # Adds an embedded signature to a previously generated AuthnRequest
 sign_authn_request = (xml, private_key, options) ->
-  signer = new SignedXml null, options
-  signer.addReference "//*[local-name(.)='AuthnRequest']", ['http://www.w3.org/2000/09/xmldsig#enveloped-signature','http://www.w3.org/2001/10/xml-exc-c14n#']
-  signer.signingKey = private_key
+
+  options ?= {}
+  options.canonicalizationAlgorithm ?= "http://www.w3.org/2001/10/xml-exc-c14n#"
+  options.signatureAlgorithm ?= "http://www.w3.org/2000/09/xmldsig#rsa-sha1"
+
+  # signer = new SignedXml null, options
+  # NDEBUG [documentation] [breaking-change] Expand the options, move idmode into options, fix types #323
+  signer = new SignedXml options
+  # NDEBUG [documentation] [breaking-change] Remove default for transformation algorithm #410
+  # [breaking-change] Remove default for signature algorithm #408
+  # [breaking-change] Remove default for digest algorithm #406
+  # [breaking-change] Remove default canonicalization algorithm #405
+  signer.addReference({
+      xpath: "//*[local-name(.)='AuthnRequest']",
+      digestAlgorithm: "http://www.w3.org/2000/09/xmldsig#sha1",
+      transforms: ['http://www.w3.org/2000/09/xmldsig#enveloped-signature','http://www.w3.org/2001/10/xml-exc-c14n#']
+  });
+  # signer.canonicalizationAlgorithm = "http://www.w3.org/2001/10/xml-exc-c14n#";
+  # signer.signatureAlgorithm = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
+
+  signer.privateKey = private_key
   signer.computeSignature xml
   return signer.getSignedXml()
 
@@ -244,15 +263,27 @@ check_saml_signature = (xml, certificate) ->
 
   # xpath failed to capture <ds:Signature> nodes of direct descendents of the root.
   # Call documentElement to explicitly start from the root element of the document.
-  signature = xmlcrypto.xpath(doc.documentElement, "./*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']")
+  signature = xpath.select("./*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']", doc.documentElement)
   return null unless signature.length is 1
   sig = new xmlcrypto.SignedXml()
-  sig.keyInfoProvider = getKey: -> format_pem(certificate, 'CERTIFICATE')
+  # NDEBUG
+  # sig.keyInfoProvider = getKey: -> format_pem(certificate, 'CERTIFICATE')
+  # *** https://github.com/node-saml/xml-crypto/blob/master/CHANGELOG.md
+  # [breaking-change] Rename signingCert -> publicCert and signingKey -> privateKey #315
+  # [semver-major] [breaking-change] Add support for in ; remove KeyInfoProvider #301
+  sig.publicCert = format_pem(certificate, 'CERTIFICATE')
   sig.loadSignature signature[0]
-  valid = sig.checkSignature xml
-  if valid
-    return get_signed_data(doc, sig)
-  else
+  try
+    valid = sig.checkSignature xml
+    if valid
+        return get_signed_data(doc, sig)
+      else
+        return null
+  catch ex
+    # NDEBUG
+    # 5.0.0 [chore] Improve and simplify validation logic #373
+    # https://github.com/node-saml/xml-crypto/pull/373
+    # Now throws instead of just returning null on Error: invalid signature: the signature value ${this.signatureValue} is incorrect
     return null
 
 # Gets the data that is actually signed according to xml-crypto. This function should mirror the way xml-crypto finds
@@ -265,10 +296,10 @@ get_signed_data = (doc, sig) ->
 
     elem = []
     if uri is ""
-      elem = xmlcrypto.xpath(doc, "//*")
+      elem = xpath.select("//*", doc)
     else
       for idAttribute in ["Id", "ID"]
-        elem = xmlcrypto.xpath(doc, "//*[@*[local-name(.)='" + idAttribute + "']='" + uri + "']")
+        elem = xpath.select("//*[@*[local-name(.)='" + idAttribute + "']='" + uri + "']", doc)
         if elem.length > 0
           break
 
