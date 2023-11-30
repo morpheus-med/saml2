@@ -166,6 +166,12 @@ describe 'saml2', ->
         formatted_key = saml2.format_pem get_test_file("test.pem"), 'PRIVATE KEY'
         assert.equal formatted_key, get_test_file("test.pem")
 
+      it 'formats an adfs provided certificate', ->
+        raw_key = get_test_file("adfs-b64-key.txt")
+        formatted_key = saml2.format_pem raw_key, 'CERTIFICATE'
+        expected_key = "-----BEGIN CERTIFICATE-----\n" + raw_key + "\n-----END CERTIFICATE-----"
+        assert.equal formatted_key.trim(), expected_key.trim()
+
     describe 'sign_get_request', ->
       it 'correctly signs a get request', ->
         uri = new url.URL('https://example.com/assert?qp=123')
@@ -215,6 +221,11 @@ describe 'saml2', ->
       it 'validates a Response signature when the dsig namespace is declared at the root level', ->
         result = saml2.check_saml_signature(get_test_file("good_response_twice_signed_dsig_ns_at_top.xml"), get_test_file("test.crt"))
         assert.notEqual null, result
+
+      it 'accepts signed adfs 2019 xml', ->
+        result = saml2.check_saml_signature(get_test_file("adfs-assertion-response.xml"), get_test_file("adfs-b64-key.txt"))
+        assert.deepEqual result, [get_test_file("adfs-assertion-response-signed-data.xml")]
+
 
     describe 'check_status_success', =>
       it 'accepts a valid success status', =>
