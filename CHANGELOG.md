@@ -3,7 +3,7 @@
 Our fork adds support for AD FS and other additions for Arterys IDP integration.
 
 ## List of changes
-### [PR: saml2 4.0.2 rebase Arterys changes](https://github.com/morpheus-med/saml2/pull/7)
+### [PR: Rebase all relevant Arterys changes up to Oct 2023 with the latest saml2 upstream v4.0.2](https://github.com/morpheus-med/saml2/pull/7)
 - Attach saml namespace definition before stringifying the document and losing this information https://github.com/morpheus-med/saml2/commit/af47d22b62415b780964ea069e8bb259cc45615a
 - Adds assert.user.name_id_format to the output https://github.com/morpheus-med/saml2/commit/06374e5b0f3758336ee626c3b9a05165933419f7, https://github.com/morpheus-med/saml2/commit/09f4521b128ca3e97fa8c57415c46a9c4422aacc
 - Add phone numbers to assertion map https://github.com/morpheus-med/saml2/commit/ccf92380cd208012a8f2df9d86590267e74b8f6b
