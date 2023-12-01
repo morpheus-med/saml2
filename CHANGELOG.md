@@ -17,7 +17,7 @@ https://github.com/morpheus-med/saml2/pull/5
 ### [PR: Update xml-crypto to v5, fix AD FS cert validation](https://github.com/morpheus-med/saml2/pull/8)
 
 #### Problem
-Update xml-crypto to latest 5.0 release to resolve ADFS saml assertion signature verification: xml-crypto versions earlier than 5.0 fail test 'accepts signed AD FS 2019 xml' with:
+xml-crypto versions earlier than 5.0 throws an error on valid signed xml produced by an AD FS server (fails test 'accepts signed AD FS 2019 xml'):
 ```
 Error: error:068000A8:asn1 encoding routines::wrong tag
       at Verify.verify (node:internal/crypto/sig:230:24)
@@ -26,7 +26,10 @@ Error: error:068000A8:asn1 encoding routines::wrong tag
 ```
 
 #### Changes
-Addresses the following xml-crypto 5.0 breaking changes https://github.com/node-saml/xml-crypto/blob/master/CHANGELOG.md
+1. Update xml-crypto to latest 5.0 release
+1. `xml-crypto` no longer exports `xpath`, so we add it as a dependency and its call signature changes from `xpath(doc, xpath)` to `xpath.select(xpath, doc)`
+
+Also addresses the following xml-crypto 5.0 breaking changes https://github.com/node-saml/xml-crypto/blob/master/CHANGELOG.md
 - [documentation] [breaking-change] Expand the options, move idmode into options, fix types #323
 - [documentation] [breaking-change] Remove default for transformation algorithm #410
 - [breaking-change] Remove default for signature algorithm #408
@@ -42,5 +45,3 @@ With:
 1. `sig.keyInfoProvider = getKey: -> format_pem(certificate, 'CERTIFICATE')` becomes `sig.publicCert = format_pem(certificate, 'CERTIFICATE')`
 1. Wrap sig.checkSignatureValue in try/catch
 
-#### Add xpath dependency
-`xml-crypto` no longer exports `xpath`, so we add it as a dependency and its call signature changes from `xpath(doc, xpath)` to `xpath.select(xpath, doc)`
