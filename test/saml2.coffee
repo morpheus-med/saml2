@@ -166,7 +166,7 @@ describe 'saml2', ->
         formatted_key = saml2.format_pem get_test_file("test.pem"), 'PRIVATE KEY'
         assert.equal formatted_key, get_test_file("test.pem")
 
-      it 'formats an adfs provided certificate', ->
+      it 'formats an AD FS 2019 xml provided certificate', ->
         raw_key = get_test_file("adfs-b64-key.txt")
         formatted_key = saml2.format_pem raw_key, 'CERTIFICATE'
         expected_key = "-----BEGIN CERTIFICATE-----\n" + raw_key + "\n-----END CERTIFICATE-----"
@@ -222,7 +222,7 @@ describe 'saml2', ->
         result = saml2.check_saml_signature(get_test_file("good_response_twice_signed_dsig_ns_at_top.xml"), get_test_file("test.crt"))
         assert.notEqual null, result
 
-      it 'accepts signed adfs 2019 xml', ->
+      it 'accepts signed AD FS 2019 xml', ->
         result = saml2.check_saml_signature(get_test_file("adfs-assertion-response.xml"), get_test_file("adfs-b64-key.txt"))
         assert.deepEqual result, [get_test_file("adfs-assertion-response-signed-data.xml")]
 
