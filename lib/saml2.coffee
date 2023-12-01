@@ -580,18 +580,6 @@ module.exports.ServiceProvider =
       { id, xml } = create_authn_request @entity_id, @assert_endpoint, identity_provider.sso_login_url, options.force_authn, options.auth_context, options.nameid_format
       zlib.deflateRaw xml, (err, deflated) =>
         return cb err if err?
-        # XXX Upstream merge conflict kept Arterys
-        # try
-        #   uri = url.parse identity_provider.sso_login_url, true
-        # catch ex
-        #   return cb ex
-        # delete uri.search # If you provide search and query search overrides query :/
-        # if options.sign_get_request
-        #   _.extend(uri.query, sign_request(deflated.toString('base64'), @private_key, options.relay_state))
-        # else
-        #   uri.query.SAMLRequest = deflated.toString 'base64'
-        #   uri.query.RelayState = options.relay_state if options.relay_state?
-        # cb null, url.format(uri), id
         try
           uri = new url.URL(identity_provider.sso_login_url)
         catch ex
@@ -715,21 +703,6 @@ module.exports.ServiceProvider =
       {id, xml} = create_logout_request @entity_id, options.name_id, options.name_id_format, options.session_index, identity_provider.sso_logout_url
       zlib.deflateRaw xml, (err, deflated) =>
         return cb err if err?
-        # XXX Upstream merge conflict, kept Arterys
-        # try
-        #   uri = url.parse identity_provider.sso_logout_url, true
-        # catch ex
-        #   return cb ex
-        # query = null
-        # if options.sign_get_request
-        #   query = sign_request deflated.toString('base64'), @private_key, options.relay_state
-        # else
-        #   query = SAMLRequest: deflated.toString 'base64'
-        #   query.RelayState = options.relay_state if options.relay_state?
-        # uri.query = _.extend(query, uri.query)
-        # uri.search = null
-        # uri.query = query
-        # cb null, url.format(uri), id
         try
           uri = new url.URL(identity_provider.sso_logout_url)
         catch ex
