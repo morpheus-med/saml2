@@ -226,6 +226,9 @@ describe 'saml2', ->
         result = saml2.check_saml_signature(get_test_file("adfs-assertion-response.xml"), get_test_file("adfs-b64-key.txt"))
         assert.deepEqual result, [get_test_file("adfs-assertion-response-signed-data.xml")]
 
+      it 'rejects AD FS 2019 xml with invalid signature', ->
+        assert.equal null, saml2.check_saml_signature(get_test_file("adfs-assertion-response-invalid-signature.xml"), get_test_file("adfs-b64-key.txt"))
+
 
     describe 'check_status_success', =>
       it 'accepts a valid success status', =>
