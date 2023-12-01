@@ -9,6 +9,7 @@ xmlcrypto     = require 'xml-crypto'
 xmldom        = require '@xmldom/xmldom'
 xmlenc        = require 'xml-encryption'
 zlib          = require 'zlib'
+xpath          = require 'xpath'
 SignedXml     = require('xml-crypto').SignedXml
 
 XMLNS =
@@ -51,9 +52,19 @@ create_authn_request = (issuer, assert_endpoint, destination, force_authn, conte
 
 # Adds an embedded signature to a previously generated AuthnRequest
 sign_authn_request = (xml, private_key, options) ->
-  signer = new SignedXml null, options
-  signer.addReference "//*[local-name(.)='AuthnRequest']", ['http://www.w3.org/2000/09/xmldsig#enveloped-signature','http://www.w3.org/2001/10/xml-exc-c14n#']
-  signer.signingKey = private_key
+
+  options ?= {}
+  options.canonicalizationAlgorithm ?= "http://www.w3.org/2001/10/xml-exc-c14n#"
+  options.signatureAlgorithm ?= "http://www.w3.org/2000/09/xmldsig#rsa-sha1"
+
+  signer = new SignedXml options
+  signer.addReference({
+      xpath: "//*[local-name(.)='AuthnRequest']",
+      digestAlgorithm: "http://www.w3.org/2000/09/xmldsig#sha1",
+      transforms: ['http://www.w3.org/2000/09/xmldsig#enveloped-signature','http://www.w3.org/2001/10/xml-exc-c14n#']
+  });
+
+  signer.privateKey = private_key
   signer.computeSignature xml
   return signer.getSignedXml()
 
@@ -244,15 +255,18 @@ check_saml_signature = (xml, certificate) ->
 
   # xpath failed to capture <ds:Signature> nodes of direct descendents of the root.
   # Call documentElement to explicitly start from the root element of the document.
-  signature = xmlcrypto.xpath(doc.documentElement, "./*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']")
+  signature = xpath.select("./*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']", doc.documentElement)
   return null unless signature.length is 1
   sig = new xmlcrypto.SignedXml()
-  sig.keyInfoProvider = getKey: -> format_pem(certificate, 'CERTIFICATE')
+  sig.publicCert = format_pem(certificate, 'CERTIFICATE')
   sig.loadSignature signature[0]
-  valid = sig.checkSignature xml
-  if valid
-    return get_signed_data(doc, sig)
-  else
+  try
+    valid = sig.checkSignature xml
+    if valid
+        return get_signed_data(doc, sig)
+      else
+        return null
+  catch ex
     return null
 
 # Gets the data that is actually signed according to xml-crypto. This function should mirror the way xml-crypto finds
@@ -265,10 +279,10 @@ get_signed_data = (doc, sig) ->
 
     elem = []
     if uri is ""
-      elem = xmlcrypto.xpath(doc, "//*")
+      elem = xpath.select("//*", doc)
     else
       for idAttribute in ["Id", "ID"]
-        elem = xmlcrypto.xpath(doc, "//*[@*[local-name(.)='" + idAttribute + "']='" + uri + "']")
+        elem = xpath.select("//*[@*[local-name(.)='" + idAttribute + "']='" + uri + "']", doc)
         if elem.length > 0
           break
 
@@ -566,18 +580,6 @@ module.exports.ServiceProvider =
       { id, xml } = create_authn_request @entity_id, @assert_endpoint, identity_provider.sso_login_url, options.force_authn, options.auth_context, options.nameid_format
       zlib.deflateRaw xml, (err, deflated) =>
         return cb err if err?
-        # XXX Upstream merge conflict kept Arterys
-        # try
-        #   uri = url.parse identity_provider.sso_login_url, true
-        # catch ex
-        #   return cb ex
-        # delete uri.search # If you provide search and query search overrides query :/
-        # if options.sign_get_request
-        #   _.extend(uri.query, sign_request(deflated.toString('base64'), @private_key, options.relay_state))
-        # else
-        #   uri.query.SAMLRequest = deflated.toString 'base64'
-        #   uri.query.RelayState = options.relay_state if options.relay_state?
-        # cb null, url.format(uri), id
         try
           uri = new url.URL(identity_provider.sso_login_url)
         catch ex
@@ -701,21 +703,6 @@ module.exports.ServiceProvider =
       {id, xml} = create_logout_request @entity_id, options.name_id, options.name_id_format, options.session_index, identity_provider.sso_logout_url
       zlib.deflateRaw xml, (err, deflated) =>
         return cb err if err?
-        # XXX Upstream merge conflict, kept Arterys
-        # try
-        #   uri = url.parse identity_provider.sso_logout_url, true
-        # catch ex
-        #   return cb ex
-        # query = null
-        # if options.sign_get_request
-        #   query = sign_request deflated.toString('base64'), @private_key, options.relay_state
-        # else
-        #   query = SAMLRequest: deflated.toString 'base64'
-        #   query.RelayState = options.relay_state if options.relay_state?
-        # uri.query = _.extend(query, uri.query)
-        # uri.search = null
-        # uri.query = query
-        # cb null, url.format(uri), id
         try
           uri = new url.URL(identity_provider.sso_logout_url)
         catch ex
