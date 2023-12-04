@@ -1,0 +1,34 @@
+<Assertion ID="_40c6c559-7c5f-468a-b3cf-ba80cd36c211" IssueInstant="2023-11-30T20:01:46.407Z" Version="2.0" xmlns="urn:oasis:names:tc:SAML:2.0:assertion"
+    ><Issuer>http://ec2amaz-k9nevvv.dana-adfs.arterys.com/adfs/services/trust</Issuer
+    ><ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+        ><ds:SignedInfo
+            ><ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" /><ds:SignatureMethod
+                Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"
+            /><ds:Reference URI="#_40c6c559-7c5f-468a-b3cf-ba80cd36c211"
+                ><ds:Transforms
+                    ><ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /><ds:Transform
+                        Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" /></ds:Transforms
+                ><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><ds:DigestValue>S8dFhAip+oJOHRly14I8KJPcRsxXOfAvKRSr7LNt4/Q=</ds:DigestValue></ds:Reference
+            ></ds:SignedInfo
+        ><ds:SignatureValue
+            >PINVALIDfSWFukWMdCFHBqc8b5sjggscxbn8W1sDMueH9awczllfuSc+kJrCHyUs9q5sM4VLRh6N+H1bxAFITEYvrNAsWxnak0X6DadhuOupRbnP9I7UhH9Vcs64IgMLSH9cU1Dz6xhbCb1LCzAn0SYcEKmAkI1/S388VZ0rbsYWDkTcxUj7Vtf42RGHg7cKiY6ltu4qsjVpuFD01s2Evlr4kP4XesiGBVeSAMsOJr9qWpTtQZtXE2P6azMpCmRdmUwu3RkGbIprsyhBxoc9sNzh+M5IEvissrP7dOEwO58yH1dCEzp043/0pXuMp2O+zwH72z7nNcE8tCo7O0EAm4ctUyb8Q==</ds:SignatureValue
+        ><KeyInfo xmlns="http://www.w3.org/2000/09/xmldsig#"
+            ><ds:X509Data
+                ><ds:X509Certificate
+                    >MIIDBjCCAe6gAwIBAgIQOoKA65umGb1IzhX1dA5WyjANBgkqhkiG9w0BAQsFADA/MT0wOwYDVQQDEzRBREZTIFNpZ25pbmcgLSBlYzJhbWF6LWs5bmV2dnYuZGFuYS1hZGZzLmFydGVyeXMuY29tMB4XDTIzMTEyNzIyNDUxNVoXDTI0MTEyNjIyNDUxNVowPzE9MDsGA1UEAxM0QURGUyBTaWduaW5nIC0gZWMyYW1hei1rOW5ldnZ2LmRhbmEtYWRmcy5hcnRlcnlzLmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALGjHy3KL11BrnVYPZaoczQNzZDSphGiEHCpUW2T6Zb5bUSjCl2L/+nJd3uUB3NaUmcUA3nduHKA2oWcntXUzMnOV5xB69arxgi+o8QMZb4rAxywjGabdAE7vMgsBQSUPQXRiFkFvwJAOIjiw2hCNqawy5G9fVqiL/b5q+KtI6k80AhLrrHuGLLEXK4JoVi+uds2KIesRzNinpa7IV500DXElixMcfpS2VNjbdxSAsXXhqTsUhFE/xdbx4SWZmSVHc/zK+ePGWp7C9WceWgO8xn36nHSEbdJHCNp2HDTXkAIFwgvsg6rd3iT+QHIYmZqewobvgJdxdTc3xHP1St64vECAwEAATANBgkqhkiG9w0BAQsFAAOCAQEABHycndo0QCerp+NSqFrwucdr+BHGXh3Q4vPn3ZvLfK7BCYecWPx9/USbxyGTbpsjAyqq8Q0avNN26picVNYvIYBgajObyku5cIyyPxGAxGOevzFkKXEM4pN9iRrNjoVtKTiW6n9ey5t2En7Je9Ps0b/oqUC4BXwGgRZCepxYtSjScvhs6CaDANM7M3y2CMVlzAFCLAaO9bJ9rcoGq+pndsPokuq82F8wclklxm5XqpEjm/EAB9vRZUjmLHhYb8P3wkKqOuOLT0r4H6FuWMPQbekNybvvaoEtTvlBz8xwbWg2K5mANOYnJLtXZEXo0Pz9Vt6I2PUw136BNfsarfyqRQ==</ds:X509Certificate
+                ></ds:X509Data
+            ></KeyInfo
+        ></ds:Signature
+    ><Subject
+        ><NameID Format="urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress">test2@dana-adfs.arterys.com</NameID
+        ><SubjectConfirmation Method="urn:oasis:names:tc:SAML:2.0:cm:bearer"
+            ><SubjectConfirmationData
+                InResponseTo="_8ea8a6fbc0a8e176c96406f0cc05b0862f077d92c3"
+                NotOnOrAfter="2023-11-30T20:06:46.407Z"
+                Recipient="https://dev.arterys.com/assert" /></SubjectConfirmation></Subject
+    ><Conditions NotBefore="2023-11-30T20:01:46.407Z" NotOnOrAfter="2023-11-30T21:01:46.407Z"
+        ><AudienceRestriction><Audience>https://dev.arterys.com/saml/metadata.xml</Audience></AudienceRestriction></Conditions
+    ><AuthnStatement AuthnInstant="2023-11-30T20:01:46.126Z" SessionIndex="_40c6c559-7c5f-468a-b3cf-ba80cd36c211"
+        ><AuthnContext><AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport</AuthnContextClassRef></AuthnContext></AuthnStatement
+    ></Assertion
+>
