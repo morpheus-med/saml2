@@ -36,7 +36,7 @@
     "async": "^3.2.0",
     "debug": "^4.3.0",
     "underscore": "^1.8.0",
-    "xml-crypto": "^5.0.0",
+    "xml-crypto": "^6.0.0",
     "xml-encryption": "^3.0.2",
     "xmlbuilder2": "^2.4.0",
     "xpath": "^0.0.33"
