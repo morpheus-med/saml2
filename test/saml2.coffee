@@ -145,7 +145,7 @@ describe 'saml2', ->
 
         assert.equal(
           sp_sso_descriptor.length, 1, "Expected 1 SP SSO descriptor; found #{sp_sso_descriptor.length}")
-        
+
         assert _(entity_descriptor.getElementsByTagNameNS('urn:oasis:names:tc:SAML:2.0:metadata', 'AssertionConsumerService')).some((assertion) ->
           _(assertion.attributes).some((attr) -> attr.name is 'Binding' and attr.value is 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST') and
             _(assertion.attributes).some((attr) -> attr.name is 'Location' and attr.value is ASSERT_ENDPOINT))
@@ -223,7 +223,7 @@ describe 'saml2', ->
         assert.notEqual null, result
 
       it 'accepts signed AD FS 2019 xml', ->
-        result = saml2.check_saml_signature(get_test_file("adfs-assertion-response.xml"), get_test_file("adfs-b64-key.txt"))
+        result = saml2.check_saml_signature(get_test_file("adfs-assertion-response.xml"), get_test_file("adfs-cert.b64.txt"))
         assert.deepEqual result, [get_test_file("adfs-assertion-response-signed-data.xml")]
 
       it 'rejects AD FS 2019 xml with invalid signature', ->

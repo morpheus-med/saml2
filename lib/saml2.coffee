@@ -258,6 +258,7 @@ check_saml_signature = (xml, certificate) ->
   signature = xpath.select("./*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']", doc.documentElement)
   return null unless signature.length is 1
   sig = new xmlcrypto.SignedXml()
+  sig.getCertFromKeyInfo = () -> null
   sig.publicCert = format_pem(certificate, 'CERTIFICATE')
   sig.loadSignature signature[0]
   try
