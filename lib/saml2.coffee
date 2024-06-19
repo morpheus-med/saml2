@@ -259,11 +259,11 @@ check_saml_signature = (xml, certificate) ->
 
   # cert from xml
   certFromXml = xpath.select("./*[local-name(.)='X509Certificate' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']", doc.documentElement)
-  console.warn "jjimmmy halp me #{certFromXml}"
+  console.warn "jjimmmy halp me certFromXml #{JSON.stringify certFromXml}"
   return null unless signature.length is 1
   sig = new xmlcrypto.SignedXml()
-  sig.getCertFromKeyInfo = () -> null
-  sig.publicCert = format_pem(certificate, 'CERTIFICATE')
+  # sig.getCertFromKeyInfo = () -> null
+  # sig.publicCert = format_pem(certificate, 'CERTIFICATE')
   sig.loadSignature signature[0]
   try
     valid = sig.checkSignature xml
@@ -472,7 +472,7 @@ parse_authn_response = (saml_response, sp_private_keys, idp_certificates, allow_
       saml_response_str = saml_response.toString()
       for cert, i in idp_certificates or []
         try
-          console.warn "jjimmmy halp me\n #{JSON.stringify(result)} \n cert \n #{JSON.stringify(cert)} \n samle_response_str \n #{JSON.stringify(saml_response_str)}"
+          console.warn "jjimmmy halp me\n #{JSON.stringify result} \n cert \n #{JSON.stringify cert} \n samle_response_str \n #{JSON.stringify saml_response_str}"
           signed_data = check_saml_signature(result, cert) or check_saml_signature saml_response_str, cert
         catch ex
           return cb_wf new Error("SAML Assertion signature check failed! (Certificate \##{i+1} may be invalid. #{ex.message}")
