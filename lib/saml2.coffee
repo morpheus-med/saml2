@@ -467,7 +467,7 @@ parse_authn_response = (saml_response, sp_private_keys, idp_certificates, allow_
       saml_response_str = saml_response.toString()
       for cert, i in idp_certificates or []
         try
-          console.warn('jjimmmy halp me\n', result, '\n cert \n', cert, '\n samle_response_str \n', saml_response_str );
+          console.warn('jjimmmy halp me\n' + JSON.stringify(result) + '\n cert \n' + JSON.stringify(cert) + '\n samle_response_str \n' + JSON.stringify(saml_response_str));
           signed_data = check_saml_signature(result, cert) or check_saml_signature saml_response_str, cert
         catch ex
           return cb_wf new Error("SAML Assertion signature check failed! (Certificate \##{i+1} may be invalid. #{ex.message}")
