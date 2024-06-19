@@ -256,6 +256,10 @@ check_saml_signature = (xml, certificate) ->
   # xpath failed to capture <ds:Signature> nodes of direct descendents of the root.
   # Call documentElement to explicitly start from the root element of the document.
   signature = xpath.select("./*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']", doc.documentElement)
+
+  # cert from xml
+  certFromXml = xpath.select("./*[local-name(.)='X509Certificate' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']", doc.documentElement)
+  console.warn "jjimmmy halp me #{certFromXml}"
   return null unless signature.length is 1
   sig = new xmlcrypto.SignedXml()
   sig.getCertFromKeyInfo = () -> null
@@ -268,6 +272,7 @@ check_saml_signature = (xml, certificate) ->
       else
         return null
   catch ex
+    console.warn "jjimmmy halp me #{ex}"
     return null
 
 # Gets the data that is actually signed according to xml-crypto. This function should mirror the way xml-crypto finds
@@ -467,7 +472,7 @@ parse_authn_response = (saml_response, sp_private_keys, idp_certificates, allow_
       saml_response_str = saml_response.toString()
       for cert, i in idp_certificates or []
         try
-          console.warn('jjimmmy halp me\n' + JSON.stringify(result) + '\n cert \n' + JSON.stringify(cert) + '\n samle_response_str \n' + JSON.stringify(saml_response_str));
+          console.warn "jjimmmy halp me\n #{JSON.stringify(result)} \n cert \n #{JSON.stringify(cert)} \n samle_response_str \n #{JSON.stringify(saml_response_str)}"
           signed_data = check_saml_signature(result, cert) or check_saml_signature saml_response_str, cert
         catch ex
           return cb_wf new Error("SAML Assertion signature check failed! (Certificate \##{i+1} may be invalid. #{ex.message}")
