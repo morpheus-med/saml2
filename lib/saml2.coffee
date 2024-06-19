@@ -258,12 +258,13 @@ check_saml_signature = (xml, certificate) ->
   signature = xpath.select("./*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']", doc.documentElement)
 
   # cert from xml
-  certFromXml = xpath.select("./*[local-name(.)='X509Certificate' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']", doc.documentElement)
-  console.warn "jjimmmy halp me certFromXml #{JSON.stringify certFromXml}"
+  certFromXml = xpath.select("//*[local-name()='X509Certificate']", doc.documentElement)
+  console.warn "jjimmmy halp me certFromXml #{JSON.stringify certFromXml.textContent}"
   return null unless signature.length is 1
   sig = new xmlcrypto.SignedXml()
   # sig.getCertFromKeyInfo = () -> null
   # sig.publicCert = format_pem(certificate, 'CERTIFICATE')
+  sig.publicCert = format_pem(certFromXml, 'CERTIFICATE')
   sig.loadSignature signature[0]
   try
     valid = sig.checkSignature xml
