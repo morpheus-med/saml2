@@ -251,6 +251,7 @@ decrypt_assertion = (dom, private_keys, cb) ->
 # if the signature is invalid. Comparing the result against null is NOT sufficient for signature checks as it doesn't
 # verify the signature is signing the important content, nor is it preventing the parsing of unsigned content.
 check_saml_signature = (xml, certificate) ->
+  console.warn("RAW XML THING --------\n #{xml}");
   doc = (new xmldom.DOMParser()).parseFromString(xml)
 
   # xpath failed to capture <ds:Signature> nodes of direct descendents of the root.
@@ -258,8 +259,8 @@ check_saml_signature = (xml, certificate) ->
   signature = xpath.select("./*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']", doc.documentElement)
 
   # cert from xml
-  certFromXml = xpath.select("//*[local-name()='X509Certificate']", doc.documentElement)
-  console.warn "jjimmmy halp me certFromXml #{JSON.stringify certFromXml.textContent}"
+  certFromXml = xpath.select("//*[local-name(.)='X509Certificate' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']", doc.documentElement)
+  console.warn "jjimmmy halp me certFromXml #{JSON.stringify certFromXml.textContent} or maybe? #{certFromXml[0]}"
   return null unless signature.length is 1
   sig = new xmlcrypto.SignedXml()
   # sig.getCertFromKeyInfo = () -> null
