@@ -265,7 +265,7 @@ check_saml_signature = (xml, certificate) ->
   console.warn "am equal????? #{certificate == certFromXml}"
   return null unless signature.length is 1
   sig = new xmlcrypto.SignedXml()
-  # sig.getCertFromKeyInfo = () -> null
+  sig.getCertFromKeyInfo = () -> null
   # sig.publicCert = format_pem(certificate, 'CERTIFICATE')
   sig.publicCert = format_pem(certFromXml, 'CERTIFICATE')
   sig.loadSignature signature[0]
